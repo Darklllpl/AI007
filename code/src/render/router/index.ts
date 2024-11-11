@@ -1,6 +1,7 @@
 import { createRouter, RouteRecordRaw, createWebHashHistory } from "vue-router";
 import type { App } from "vue";
 import AIchat from "@/render/views/AIchat/index.vue";
+import recharge from "@/render/views/recharge/index.vue"
 
 export const constantRouterMap: RouteRecordRaw[] = [
   {
@@ -44,6 +45,15 @@ export const constantRouterMap: RouteRecordRaw[] = [
     },
     component: AIchat, // 使用静态导入
   },
+  //添加充值的路径
+  {
+    path: "/recharge",
+    name: "recharge",
+    meta: {
+      title: "充值",
+    },
+    component: recharge, // 使用静态导入
+  }
 ];
 
 export const router = createRouter({
