@@ -25,7 +25,31 @@
       <div v-if="errorCode === 2" class="errorstatus2">
           <img src="../../assets/img/login/error-icon.png" alt="错误提示" class="error-icon"> 验证码已过期
       </div>
+      <div v-if="showSuccessMessage" class="rightstatus1">
+        <img src="../../assets/img/login/greentick.png" alt="发送提示" class="greentick"> 验证码已发送
+      </div>
     </div>
+
+
+    <div v-if="showModal" class="modal-overlay">
+      <div class="modal-content">
+          <p class="modaltext1">服务协议及隐私保护</p>
+          <p class="modaltext2">为更好的保护您的合法权益</p>
+          <span class="modaltext3">请阅读并同意
+            <span class="links1">
+              <a href="服务协议链接" class="link1">服务协议</a>
+              和
+              <a href="隐私权政策链接" class="link1">隐私权政策</a>
+            </span>
+          </span>
+
+          <div class="modalbutton-container">
+              <button @click="closeModal" class="modalbutton1">不同意</button>
+              <button @click="closeModal1" class="modalbutton2">同意</button>
+          </div>
+      </div>
+    </div>
+
 
     <div class="loginfunction-container">
       <div class="phonenumber-box">
@@ -43,8 +67,8 @@
 
       <div class="slider-box">
         <div class="slider" :style="{ left: `${sliderPosition}px` }" @mousedown="onMouseDown">
-          <img v-if="isRight" src="../../assets/img/login/arrow.png" alt="箭头" class="arrow" />
-          <img v-if="!isRight" src="../../assets/img/login/greenarrow.png" alt="绿箭头" class="greenarrow" />
+            <img v-if="isRight" src="../../assets/img/login/arrow.png" alt="箭头" class="arrow" />
+            <img v-if="!isRight" src="../../assets/img/login/greenarrow.png" alt="绿箭头" class="greenarrow" />
         </div>
         <span id="slider-text" class="slider-text">{{ sliderText }}</span>
       </div>
@@ -52,8 +76,14 @@
       <!-- 显示或隐藏验证码输入框 -->
       <div v-if="showVerificationBox" class="verification-box">
         <input type="text" class="input-box" placeholder="短信验证码" v-model="verificationCode">
-        <button class="get-code-button">获取验证码</button>
+        <button 
+            class="get-code-button" 
+            :disabled="isCounting || !isVerified"
+            @click="getVerificationCode">
+            {{ buttonText }} 
+        </button>
       </div>
+
 
       <!-- 显示或隐藏密码输入框 -->
       <div v-else class="secretcode-box">
@@ -138,10 +168,23 @@ const isFirstImage = ref(true); // 控制当前显示的图片
 const isRight=ref(true)
 const showVerificationBox = ref(true); // 默认显示验证码输入框
 const isPasswordVisible = ref(false);  // 控制密码显示状态
-
+const showModal = ref(false); // 定义 showModal 变量
+const isCounting = ref(false); // 倒计时状态
+const countdown = ref(60); // 倒计时初始值
+const buttonText = ref('获取验证码'); // 按钮文字
+const showSuccessMessage = ref(false); // 控制成功提示是否显示
+const isVerified = ref(false); // 控制验证通过状态
 
 // 登录函数
 const onLogin = () => {
+
+  // 检查 isFirst 变量
+  if (isFirstImage.value) {
+    // 如果 isFirst 为 false，则弹出窗口并返回
+    showModal.value = true;
+    return; // 不执行后续操作
+  }
+
   const loginData = showVerificationBox.value 
     ? { phone: phoneNumber.value, code: verificationCode.value } 
     : { name: phoneNumber.value, password: password.value };
@@ -153,26 +196,33 @@ const onLogin = () => {
     })
     .catch((error) => {
       if (error.response) {
-        console.error("Error status:", error.response.status);
-        console.error("Error data:", error.response.data);
+        //console.error("Error status:", error.response.status);
         const code = error.response.status; // 获取后端返回的错误码
         errorCode.value = code; // 更新错误码
       } else {
-        console.error("Error message:", error.message);
+        //console.error("Error message:", error.message);
       }
     });
 };
 
+function closeModal(){
+  showModal.value = false;
+}
+function closeModal1(){
+  showModal.value = false;
+  toggleImage();
+}
+
 // 鼠标按下事件
 const onMouseDown = (event: MouseEvent) => {
-  const startX = event.clientX; 
+  const startX = event.clientX;
   const sliderBox = event.currentTarget.parentElement as HTMLElement; // 获取滑块区域容器
   const sliderWidth = sliderBox.clientWidth;
   const initialPosition = sliderPosition.value;
 
   const onMouseMove = (moveEvent: MouseEvent) => {
     const currentX = moveEvent.clientX;
-    
+
     // 判断滑块是否已经到达最右边
     if (sliderPosition.value >= sliderWidth - 29) {
       return; // 若已到达，则不再处理拖动
@@ -184,7 +234,7 @@ const onMouseDown = (event: MouseEvent) => {
     if (newPosition < 0) newPosition = 0;
     if (newPosition > sliderWidth - 29) newPosition = sliderWidth - 29; // 29是滑块的宽度
 
-    sliderPosition.value = newPosition; 
+    sliderPosition.value = newPosition;
 
     // 更新滑块区域背景颜色
     const backgroundColor = newPosition >= sliderWidth - 29 ? '#FFFFFF' : '#E7E9E8';
@@ -193,9 +243,11 @@ const onMouseDown = (event: MouseEvent) => {
     // 更新提示文字
     if (newPosition >= sliderWidth - 29) {
       sliderText.value = '验证通过';
+      isVerified.value = true; // 设置验证通过状态
       toggleImage2();
     } else {
       sliderText.value = '按住滑块，拖到最后边';
+      isVerified.value = false; // 设置为未通过状态
     }
   };
 
@@ -206,9 +258,9 @@ const onMouseDown = (event: MouseEvent) => {
       document.removeEventListener('mouseup', onMouseUp);
       return; // 到达最右边后，结束拖动
     }
-    
+
     // 还原背景颜色
-    sliderBox.style.background = '#E7E9E8'; 
+    sliderBox.style.background = '#E7E9E8';
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
   };
@@ -216,6 +268,43 @@ const onMouseDown = (event: MouseEvent) => {
   document.addEventListener('mousemove', onMouseMove);
   document.addEventListener('mouseup', onMouseUp);
 };
+
+// 获取验证码
+function getVerificationCode() {
+  if (!isVerified.value) return; // 如果未验证通过，则不执行获取验证码逻辑
+  
+  isCounting.value = true;
+  countdown.value = 60; // 初始化倒计时为60秒
+  updateButtonText(); // 更新按钮文本
+
+  // 显示验证码发送成功的提示
+  showSuccessMessage.value = true;
+
+  // 设置5秒钟后隐藏提示
+  setTimeout(() => {
+    showSuccessMessage.value = false; // 隐藏提示
+  }, 5000);
+
+  const timer = setInterval(() => {
+    countdown.value--;
+    updateButtonText(); // 更新按钮文本
+
+    if (countdown.value === 0) {
+      clearInterval(timer);
+      isCounting.value = false;
+      buttonText.value = '获取验证码'; // 倒计时结束后恢复文本
+    }
+  }, 1000);
+
+  // 这里可以添加获取验证码的网络请求逻辑
+}
+
+
+// 更新按钮文本
+function updateButtonText() {
+  buttonText.value = isCounting.value ? `重新获取(${countdown.value}s)` : '获取验证码';
+}
+
 
 
 // 切换验证码和密码登录方式
@@ -336,6 +425,27 @@ function togglePasswordVisibility() {
     height: 16px; /* 设置图标高度 */
     margin-right: 3px; /* 图标和文本之间的间距 */
 }
+.rightstatus1{
+  position: absolute; /* 设置为绝对定位 */
+    top: 0; /* 重叠在顶部 */
+    left: 0; /* 重叠在左边 */
+    width: 144px;
+    height: 25px;
+    text-align: center; /* 文本居中对齐 */
+    background-color: #FFFFFF;
+    border: 1px solid #C6CFDC;
+    border-radius: 4px;
+    font-size: 12px;
+    color: #00B978;
+    display: flex; /* 使用 Flexbox */
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+}
+.greentick{
+  width: 16px; /* 设置图标宽度 */
+  height: 16px; /* 设置图标高度 */
+  margin-right: 3px; /* 图标和文本之间的间距 */
+}
 
 .phonenumber-box {
   display: flex;
@@ -441,7 +551,6 @@ function togglePasswordVisibility() {
 .input-box {
     width: 182px; /* 设置文本框宽度 */
     height: 33px; /* 设置文本框高度 */
-    margin-right: 8px; /* 设置与按钮之间的间距 */
     border-radius: 4px;
     border: 1px solid #C6CFDC;
 }
@@ -461,7 +570,11 @@ function togglePasswordVisibility() {
     border-radius: 4px;
     border: 1px solid #C6CFDC;
     background-color: #FFFFFF;
+    font-size: 12px;
+    color: #1E223C;
+    cursor: pointer;
 }
+
 
 .secretcode-box{
   display: flex;
@@ -521,6 +634,106 @@ function togglePasswordVisibility() {
     cursor: pointer; /* 鼠标悬停时显示为可点击 */
     line-height: 16.8px;
 }
+.modal-overlay {
+    position: fixed; /* 使用固定定位，使其覆盖整个视窗 */
+    top: 0; /* 从顶部开始 */
+    left: 0; /* 从左侧开始 */
+    width: 333px; /* 占满整个宽度 */
+    height: 500px; /* 占满整个高度 */
+    background-color: rgba(0, 0, 0, 0.5); /* 黑色背景，50%透明度 */
+    display: flex; /* 使用弹性盒布局 */
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+    z-index: 1000; /* 设置z-index，确保在最上层 */
+}
+
+.modal-content {
+    width: 272px; /* 弹出窗口宽度 */
+    height: 162px; /* 高度可自适应内容 */
+    background-color: #fff; /* 白色背景 */
+    border-radius: 4px; /* 圆角 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5); /* 阴影效果 */
+    text-align: center; /* 文本居中 */
+    z-index: 1001; /* 确保内容层级高于背景 */
+}
+.modaltext1 {
+    font-size: 16px; /* 设置第一行文字大小 */
+    color: #1E223C; /* 设置文字颜色 */
+    font-weight: 500;
+    line-height: 22.4px;
+    position: absolute;
+    top:185px;
+    left: 45px;
+    width: 240px;
+    height: 22px;
+
+}
+
+.modaltext2 {
+    font-size: 14px; /* 设置第二行文字大小 */
+    color: #1E223C; /* 设置文字颜色 */
+    font-weight: 400;
+    line-height: 19.6px;
+    position: absolute;
+    top: 219px;
+    width: 240px;
+    height: 20px;
+    left: 45px;
+}
+
+.modaltext3 {
+    font-size: 14px; /* 设置第三行文字大小 */
+    color: #1E223C; /* 设置文字颜色 */
+    font-weight: 400;
+    line-height: 19.6px;
+    position: absolute;
+    top: 247px;
+    left: 45px;
+}
+.links1 .link1{
+  text-decoration: none; /* 去掉链接下划线 */
+    color: blue; /* 链接颜色 */
+    font-size: 14px; /* 字体大小 */
+    position: relative;
+}
+
+.modalbutton-container {
+    position: absolute;
+    top: 0px;
+}
+
+.modalbutton1, .modalbutton2 {
+    border-radius: 4px; /* 圆角 */
+    cursor: pointer; /* 鼠标悬停时显示为手型 */
+    border: 1px solid #C6CFDC;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 19.6px;
+    width: 100%;
+    text-align: center;
+    position: absolute;
+    top: 283px;
+}
+
+.modalbutton1 {
+    background-color: #FFFFFF; /* 按钮1的背景色 */
+    color: #1E223C; /* 按钮1文字颜色 */
+    width: 66px;
+    height: 32px;
+    position: absolute;
+    left: 44.5px;
+}
+
+.modalbutton2 {
+    background-color: #5CA9F9; /* 按钮2的背景色 */
+    color: #FFFFFF; /* 按钮2文字颜色 */
+    width: 52px;
+    height: 32px;
+    position: absolute;
+    left: 175.5px;
+}
+
+
 
 .private-box {
     display: flex; /* 使用flex布局使内容排列在一行 */
@@ -553,10 +766,6 @@ function togglePasswordVisibility() {
     font-size: 12px; /* 字体大小 */
     bottom: 2px;
     position: relative;
-}
-
-.links .link:hover {
-    text-decoration: underline; /* 悬停时显示下划线 */
 }
 
 .loginmethod-container{
