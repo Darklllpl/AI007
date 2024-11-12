@@ -15,12 +15,19 @@
                 </div>
             </div>
 
-            <button class="tips-button" @click="opentipsModal">
-                <div class="tips-icon-container">
-                    <img src="../../assets/img/AIchat/tips-top.png" alt="打开通知" class="tips-top-icon" />
-                    <img src="../../assets/img/AIchat/tips-buttom.png" alt="打开通知" class="tips-buttom-icon" />
-                </div>
-            </button>
+            <div class="page-container">
+                <button class="tips-button" @click.stop="openTipsModal">
+                    <div class="tips-icon-container">
+                        <img src="../../assets/img/AIchat/tips-top.png" alt="打开通知" class="tips-top-icon" />
+                        <img src="../../assets/img/AIchat/tips-buttom.png" alt="打开通知" class="tips-buttom-icon" />
+                    </div>
+                </button>
+
+                <!-- 确保 TipsModal 被包括在这里 -->
+                <TipsModal v-if="isTipsModalVisible" @close="closeTipsModal" />
+                <!-- 确保 SettingModal 被包括在这里 -->
+                <SettingModal v-if="isSettingModalVisible" @close="closeSettingModal" />
+            </div>
 
             <button class="setting-button" @click="opensettingModal">
                 <img src="../../assets/img/AIchat/setting.png" alt="打开设置" class="setting-icon" />
@@ -30,13 +37,8 @@
         <div class="aibot-box">
             <div class="search-container">
                 <img src="../../assets/img/AIchat/search-01.png" alt="搜索" class="search-icon" />
-                <input
-                    type="text"
-                    class="search-input"
-                    value="搜索"
-                />
+                <input type="text" class="search-input" placeholder="搜索" />
             </div>
-
             <div class="aibot-list">
                 <button class="aibot-container1" @click="selectAIBot('伊利亚')">
                     <img src="../../assets/img/AIchat/Sofia.png" alt="索菲娅" class="aibot-image" />
@@ -53,7 +55,6 @@
                 </button>
 
                 <button class="aibot-container2" @click="selectAIBot('其他机器')">
-                    <!-- 其他机器人示例 -->
                     <div class="text-container">
                         <div class="text-top">
                             <div class="text-line1">其他机器人</div>
@@ -63,7 +64,7 @@
                 </button>
             </div>
         </div>
-        
+
         <div class="aichat-box">
             <div v-if="selectedBot">
                 <div class="chattitle-box">
@@ -82,11 +83,11 @@
                 <div class="chat-content">
                     <div class="message received-message">
                         <img src="../../assets/img/AIchat/Sofia.png" alt="Bot" class="avatar" />
-                        <div class="message-text">请问您需要什么服务请问您需要什么服务请问您需要什么服务请问您需要什么服务这里有东西不太清楚</div>
+                        <div class="message-text">请问您需要什么服务</div>
                     </div>
                     <div class="message sent-message">
                         <img src="../../assets/img/AIchat/user.png" alt="User" class="avatar" />
-                        <div class="message-text">请问您需要什么服务请问您需要什么服务请问您需要什么服务请问您需要什么服务这里有东西不太清楚</div>
+                        <div class="message-text">请问您需要什么服务</div>
                     </div>
                     <div class="message sent-message" v-for="(msg, index) in messages" :key="index">     
                         <img :src="msg.avatar" alt="User" class="avatar" />
@@ -109,17 +110,16 @@
                         发送
                     </button>
                 </div>
-
             </div>
         </div>
-
     </div>
 </template>
-  
+
 <script lang="ts" setup>
 import { useRouter } from "vue-router";
 import { ref } from 'vue';
-
+import TipsModal from './tipsmodal.vue';  // 确保导入
+import SettingModal from '../setting/index.vue';  // 导入设置组件
 
 const router = useRouter();
 const selectedBot = ref<string | null>(null);
@@ -128,15 +128,39 @@ const charCount = ref(0); // 字数计数
 const inputMessage = ref(''); // 输入消息的变量
 const messages = ref<{ avatar: string; text: string; }[]>([]); // 消息列表
 
+// 控制提示框和设置框的显示状态
+const isTipsModalVisible = ref(false);
+const isSettingModalVisible = ref(false); // 设置窗口的显示状态
+
 // 跳转到主页的函数
 const goHome = () => {
   router.push("/");
 };
 
-//跳转到充值界面
-const goRecharge=()=>{
-    router.push("/recharge")
-}
+// 跳转到充值界面
+const goRecharge = () => {
+  router.push("/recharge");
+};
+
+// 打开提示框
+const openTipsModal = () => {
+  isTipsModalVisible.value = true; // 显示提示框
+};
+
+// 关闭提示框
+const closeTipsModal = () => {
+  isTipsModalVisible.value = false; // 隐藏提示框
+};
+
+// 打开设置框
+const opensettingModal = () => {
+  isSettingModalVisible.value = true; // 显示设置框
+};
+
+// 关闭设置框
+const closeSettingModal = () => {
+  isSettingModalVisible.value = false; // 隐藏设置框
+};
 
 // 选择机器人
 const selectAIBot = (botName: string) => {
@@ -145,8 +169,8 @@ const selectAIBot = (botName: string) => {
 
 // 更新字数计数函数
 const updateCharCount = (event: InputEvent) => {
-    const target = event.target as HTMLInputElement; // 转换为 HTMLInputElement
-    charCount.value = target.value.length; // 获取输入框的字符长度
+  const target = event.target as HTMLInputElement; // 转换为 HTMLInputElement
+  charCount.value = target.value.length; // 获取输入框的字符长度
 };
 
 // 发送消息的函数
@@ -159,8 +183,10 @@ const sendMessage = () => {
     inputMessage.value = ''; // 清空输入框
     charCount.value = 0; // 重置字符计数
   }
-}
+};
 </script>
+
+
   
 <style lang="scss" scoped>
 .aichat-container {
