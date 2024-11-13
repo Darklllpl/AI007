@@ -6,6 +6,16 @@
                 <img src="../../assets/img/recharge/close.png" alt="关闭" class="close-icon" />
             </button>
         </div>
+
+        <div v-if="rechargestatus === 1" class="Rechargemessage-box">
+            <img src="../../assets/img/recharge/RechargeSuccessfully.png" alt="充值成功" class="Rechargemessage-icon">
+            <div class="Rechargemessage-text">充值成功</div>
+        </div>
+        <div v-else-if="rechargestatus === 2" class="Rechargemessage-box">
+            <img src="../../assets/img/recharge/RechargeFailure.png" alt="充值失败" class="Rechargemessage-icon">
+            <div class="Rechargemessage-text">充值失败</div>
+        </div>
+
         <div class="text-box">
             <div class="account">账号：177877763521</div>
         </div>
@@ -55,12 +65,14 @@
     </div>
 </template>
 
+
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
 const selectedRecharge = ref<number | null>(5); // 当前选中的充值金额
+const rechargestatus = ref<number>(1); // 充值状态，1为成功，2为失败
 
 const goAIchat = () => {
   router.push("/AIchat");
@@ -68,9 +80,12 @@ const goAIchat = () => {
 
 // 选择充值金额的方法
 const selectRecharge = (amount: number) => {
-  selectedRecharge.value = amount; // 更新选中的充值金额\
+  selectedRecharge.value = amount; // 更新选中的充值金额
+  // 模拟充值结果
+  // 这里可以根据实际情况调用后台接口，并更新 rechargestatus 的值
 };
 </script>
+
 
 <style lang="scss" scoped>
 .container {
@@ -120,7 +135,40 @@ const selectRecharge = (amount: number) => {
     outline: none; /* 去掉焦点状态时的边框 */
 }
 
+.Rechargemessage-box {
+    display: flex;
+    width: 100px;
+    height: 32px;
+    background-color: #FFFFFF; /* 纯白背景 */
+    box-shadow: 1px 4px 7.4px 0px #0000001A;
+    padding-top: 6px;
+    padding-left: 12px;
+    position: relative; /* 使得 z-index 生效 */
+    z-index: 10; /* 增加层级，遮蔽下层组件 */
+    opacity: 1; /* 确保不透明 */
+    margin-left: 102px;
+    margin-top: -15px;
+    border-radius: 4px;
+}
 
+.Rechargemessage-icon{
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+}
+.Rechargemessage-text{
+    font-family: PingFang SC;
+font-size: 14px;
+font-weight: 400;
+line-height: 19.6px;
+text-align: center;
+text-underline-position: from-font;
+text-decoration-skip-ink: none;
+color: #1E223C;
+width: 56px;
+height: 20px;
+margin-left: 2px;
+}
 .text-box {
     width: 272px;
     height: 17px;

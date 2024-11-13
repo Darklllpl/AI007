@@ -52,9 +52,9 @@
 
 
     <div class="loginfunction-container">
-      <div class="phonenumber-box">
-        <div class="phonenumber-pre">
-          <select>
+      <div class="phonenumber-box" :class="{ 'error-border': errorCode === 1 }">
+        <div class="phonenumber-pre" :class="{ 'error-border': errorCode === 1 }">
+          <select :class="{ 'error-border': errorCode === 1 }">
             <option value="+86">+86</option>
             <option value="+1">+1</option>
             <option value="+44">+44</option>
@@ -65,17 +65,23 @@
         </div>
       </div>
 
+
       <div class="slider-box">
         <div class="slider" :style="{ left: `${sliderPosition}px` }" @mousedown="onMouseDown">
             <img v-if="isRight" src="../../assets/img/login/arrow.png" alt="箭头" class="arrow" />
             <img v-if="!isRight" src="../../assets/img/login/greenarrow.png" alt="绿箭头" class="greenarrow" />
         </div>
-        <span id="slider-text" class="slider-text">{{ sliderText }}</span>
+        <span id="slider-text" class="slider-text" :style="{ color: sliderTextColor }">{{ sliderText }}</span>
       </div>
 
       <!-- 显示或隐藏验证码输入框 -->
       <div v-if="showVerificationBox" class="verification-box">
-        <input type="text" class="input-box" placeholder="短信验证码" v-model="verificationCode">
+        <input 
+          type="text" 
+          class="input-box" 
+          :class="{ 'error-border': errorCode === 1 || errorCode === 2 }" 
+          placeholder="短信验证码" 
+          v-model="verificationCode">
         <button 
             class="get-code-button" 
             :disabled="isCounting || !isVerified"
@@ -174,6 +180,7 @@ const countdown = ref(60); // 倒计时初始值
 const buttonText = ref('获取验证码'); // 按钮文字
 const showSuccessMessage = ref(false); // 控制成功提示是否显示
 const isVerified = ref(false); // 控制验证通过状态
+const sliderTextColor = ref('#1E223C'); // 初始化文字颜色
 
 // 登录函数
 const onLogin = () => {
@@ -242,12 +249,14 @@ const onMouseDown = (event: MouseEvent) => {
 
     // 更新提示文字
     if (newPosition >= sliderWidth - 29) {
-      sliderText.value = '验证通过';
-      isVerified.value = true; // 设置验证通过状态
-      toggleImage2();
+        sliderText.value = '验证通过';
+        sliderTextColor.value = '#00B978'; // 设置文字颜色为绿色
+        isVerified.value = true; // 设置验证通过状态
+        toggleImage2();
     } else {
-      sliderText.value = '按住滑块，拖到最后边';
-      isVerified.value = false; // 设置为未通过状态
+        sliderText.value = '按住滑块，拖到最后边';
+        sliderTextColor.value = '#1E223C'; // 恢复默认颜色
+        isVerified.value = false; // 设置为未通过状态
     }
   };
 
@@ -492,6 +501,15 @@ function togglePasswordVisibility() {
   border-radius: 0px 4px 4px 0px;
   box-sizing: border-box;
 }
+
+.error-border {
+  border-color: #F53126 !important; /* 修改边框颜色为红色 */
+}
+
+.phonenumber-pre select.error-border {
+  border-color: #F53126 !important; /* 针对 select 的边框颜色 */
+}
+
 
 .slider-box {
   width: 282px;

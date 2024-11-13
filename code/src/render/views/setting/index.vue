@@ -11,10 +11,41 @@
 
             <div class="setting-content">
                 <div class="sidebar">
-                    <button @click="setActiveButton(1)" :class="{'active': activeButton === 1}" class="sidebutton">账号信息</button>
-                    <button @click="setActiveButton(2)" :class="{'active': activeButton === 2}" class="sidebutton">版本</button>
-                    <button @click="setActiveButton(3)" :class="{'active': activeButton === 3}" class="sidebutton">账号安全</button>
-                    <button @click="setActiveButton(4)" :class="{'active': activeButton === 4}" class="sidebutton">关于我们</button>
+                    <button @click="setActiveButton(1)" :class="{'active': activeButton === 1}" class="sidebutton">
+                        <img 
+                            src="../../assets/img/setting/settingbtn-img1.png" 
+                            alt="齿轮" 
+                            :class="{'filtered': activeButton === 1}" 
+                            class="settingbtn-img1-icon"
+                        >
+                        账号信息
+                    </button>
+                    <button @click="setActiveButton(2)" :class="{'active': activeButton === 2}" class="sidebutton">
+                        <img 
+                            src="../../assets/img/setting/settingbtn-img2.png" 
+                            alt="V" 
+                            :class="{'filtered': activeButton === 2}" 
+                            class="settingbtn-img2-icon"
+                        >
+                        版本
+                    </button>
+                    <button @click="setActiveButton(3)" :class="{'active': activeButton === 3}" class="sidebutton">
+                        <img 
+                            src="../../assets/img/setting/settingbtn-img3.png" 
+                            alt="盾牌" 
+                            :class="{'filtered': activeButton === 3}" 
+                            class="settingbtn-img3-icon"
+                        >
+                        账号安全
+                    </button>
+                    <button @click="setActiveButton(4)" :class="{'active': activeButton === 4}" class="sidebutton">
+                        <img 
+                            src="../../assets/img/setting/sofia.png" 
+                            alt="sofia" 
+                            class="settingbtn-img4-icon"
+                        >
+                        关于我们
+                    </button>
                 </div>
 
                 <div class="content">
@@ -28,11 +59,17 @@
                             <div class="content1-value">+86 130****5678</div>
                             <button class="changephonenumber-btn">更换手机号</button>
                         </div>
-                        <div class="content1-textline3">
+                        <div v-if="VIPstatus === 1" class="content1-textline3">
                             <div class="content1-field">会员状态</div>
                             <div class="content1-value">会员</div>
                             <img src="../../assets/img/setting/VIP.png" alt="会员" class="VIP-icon">
-                            <button class="openVIP-btn" @click="ForbeVIP">会员续费</button>
+                            <button class="renewalVIP-btn" @click="ForbeVIP">会员续费</button>
+                        </div>
+                        <div v-if="VIPstatus === 2" class="content1-textline3">
+                            <div class="content1-field">会员状态</div>
+                            <div class="content1-value">会员</div>
+                            <img src="../../assets/img/setting/notVIP.png" alt="非会员" class="VIP-icon">
+                            <button class="openVIP-btn" @click="ForbeVIP">成为会员</button>
                         </div>
                         <div class="content1-textline4">
                             <div class="content1-field">使用时间</div>
@@ -107,6 +144,7 @@ const showCheckUpdate = ref(false); // 控制 checkupdate 组件的显示
 const showExit=ref(false);
 const showModifyPassword=ref(false);
 const showbeVIP=ref(false);
+const VIPstatus = ref<number>(1); // 充值状态，1为会员，2为非会员
 
 const closeModal = () => {
     emit('close'); // 触发关闭事件
@@ -204,16 +242,16 @@ const ForbeVIP=()=>{
 .sidebar {
     width: 130px; /* 侧边栏宽度 */
     background-color: #FFFFFF; /* 侧边栏背景 */
-    padding: 10px; /* 内边距 */
     display: flex;
     flex-direction: column; /* 纵向排列按钮 */
     border-right: 1px solid #CFD8E5; /* 侧边栏右边界 */
+    padding-left: 10px;
 }
 
 .sidebutton {
     text-align: left;
-    padding-left: 30px;
-    width: 100%; /* 按钮宽度填充 */
+    padding-left: 8px;
+    width: 110px; /* 按钮宽度填充 */
     height: 40px; /* 按钮高度 */
     background-color: #FFFFFF; /* 默认背景颜色 */
     color: #373B52; /* 默认文字颜色 */
@@ -226,6 +264,29 @@ const ForbeVIP=()=>{
 .active {
     background-color: #5CA9F9; /* 激活时背景色 */
     color: #FFFFFF; /* 激活时文字颜色 */
+}
+.settingbtn-img1-icon{
+    width: 15px;
+    height: 14.42px;
+    margin-right: 5.5px;
+}
+.settingbtn-img2-icon{
+    width: 15px;
+    height: 15px;
+    margin-right: 5.5px;
+}
+.settingbtn-img3-icon{
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+}
+.settingbtn-img4-icon{
+    width: 18px;
+    height: 18px;
+    margin-right: 4px;
+}
+.filtered {
+    filter: brightness(0) invert(1); /* 应用过滤器 */
 }
 
 .content {
@@ -332,6 +393,24 @@ margin-left: 10px;
 }
 
 .openVIP-btn{
+    width: 92px;
+    height: 26px;
+    border-radius: 6px;
+    background-color: #5CA9F9;
+    font-family: PingFang SC;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16.8px;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    color: #FFFFFF;
+    border: none;
+    margin-left: 162px;
+    position: relative;
+    bottom: 5px;
+    cursor: pointer;
+}
+.renewalVIP-btn{
     width: 92px;
     height: 26px;
     border-radius: 6px;
