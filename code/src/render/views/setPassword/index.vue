@@ -149,7 +149,7 @@ function togglePasswordVisibility1() {
   border-radius: 4px;
   border: 1px solid #C6CFDC;
   flex-grow: 1;
-  padding-right: 40px;
+  padding-left: 16px;
 }
 .toggle-button {
     position: absolute; /* 绝对定位按钮 */
@@ -164,7 +164,6 @@ function togglePasswordVisibility1() {
   font-size: 12px; /* 设置 placeholder 文字大小 */
     color: #A7B5C9; /* 可选：设置 placeholder 文字颜色 */
     position: relative;
-    left: 16px;
     line-height: 16.8px;
     font-weight: 400;
 }
