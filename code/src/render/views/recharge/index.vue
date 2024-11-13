@@ -60,7 +60,7 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const selectedRecharge = ref<number | null>(null); // 当前选中的充值金额
+const selectedRecharge = ref<number | null>(5); // 当前选中的充值金额
 
 const goAIchat = () => {
   router.push("/AIchat");

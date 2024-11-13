@@ -11,11 +11,12 @@
 
             <div class="setting-content">
                 <div class="sidebar">
-                    <button @click="showContent('content1')"class="sidebutton">账号信息</button>
-                    <button @click="showContent('content2')" class="sidebutton">版本</button>
-                    <button @click="showContent('content3')"class="sidebutton">账号安全</button>
-                    <button @click="showContent('content4')"class="sidebutton">关于我们</button>
+                    <button @click="setActiveButton(1)" :class="{'active': activeButton === 1}" class="sidebutton">账号信息</button>
+                    <button @click="setActiveButton(2)" :class="{'active': activeButton === 2}" class="sidebutton">版本</button>
+                    <button @click="setActiveButton(3)" :class="{'active': activeButton === 3}" class="sidebutton">账号安全</button>
+                    <button @click="setActiveButton(4)" :class="{'active': activeButton === 4}" class="sidebutton">关于我们</button>
                 </div>
+
                 <div class="content">
                     <div v-if="activeContent === 'content1'">
                         <div class="content1-textline1">
@@ -31,7 +32,7 @@
                             <div class="content1-field">会员状态</div>
                             <div class="content1-value">会员</div>
                             <img src="../../assets/img/setting/VIP.png" alt="会员" class="VIP-icon">
-                            <button class="openVIP-btn">会员续费</button>
+                            <button class="openVIP-btn" @click="ForbeVIP">会员续费</button>
                         </div>
                         <div class="content1-textline4">
                             <div class="content1-field">使用时间</div>
@@ -42,37 +43,105 @@
                             <div class="content1-value">2026年 5月 5日</div>
                         </div>
                     </div>
-                    <div v-if="activeContent === 'content2'">这里是内容 2</div>
-                    <div v-if="activeContent === 'content3'">这里是内容 3</div>
-                    <div v-if="activeContent === 'content4'">这里是内容 4</div>
+                    <div v-if="activeContent === 'content2'" class="content2">
+                        <div class="content2-field">当前版本</div>
+                        <div class="content2-textline1">
+                            <div class="content2-field">Cyber App version 116.11.1</div>
+                            <button class="checkupdate-btn" @click="checkForUpdates">检查更新</button>
+                        </div>
+                        <div class="update-title">版本更新内容</div>
+                        <div class="update-content">这次版本更新了什么什么什么什么文本
+                            详情文本详情文本详情文本详情文本详情文本详情，文本详情文本详情
+                            文本详情文本详情文本情文本详情，文本详情文情文本详情文本详情文
+                            本详情，文本详情文本详情文本详情文本详情文本详情文本详情，文本
+                            详情文本详情文本详情文本详情文本详情文本详情，文本详情文本详情文
+                            本详情文本详情文本详情文本详情，文本详情情文本详情文本详情文本详
+                            情文本详情文本详情，
+                        </div>
+                    </div>
+                    <div v-if="activeContent === 'content3'" class="content3">
+                        <div class="content3-textline">
+                            <div class="content3-field">修改密码后，您需重新登录</div>
+                            <button class="content3-btn1" @click="ForModifyPassword">修改密码</button>
+                        </div>
+                        <div class="content3-textline">
+                            <div class="content3-field">注销账号不可恢复，所有数据将被删除</div>
+                            <button class="content3-btn2">注销账号</button>
+                        </div>
+                        <div class="content3-textline">
+                            <div class="content3-field">退出当前登录账号</div>
+                            <button class="content3-btn3" @click="ForExit">退出登录</button>
+                        </div>
+                    </div>
+                    <div v-if="activeContent === 'content4'" class="content4">
+                        <img src="../../assets/img/setting/sofia.png" alt="索菲娅" class="sofia-icon">
+                        <div class="version">Cyber App version 116.11.1</div>
+                        <div class="content4-text1">联系我们</div>
+                        <div class="content4-text2">微信号：fMRI_Kevin</div>
+                    </div>
                 </div>
             </div>
+
+            <!-- 此处条件渲染 checkupdate 组件 -->
+            <CheckUpdate v-if="showCheckUpdate" @close="showCheckUpdate = false" />
+
+            <Exit v-if="showExit" @close="showExit = false" />
+
+            <ModifyPassword v-if="showModifyPassword" @close="showModifyPassword = false" />
+            <beVIP v-if="showbeVIP" @close="showbeVIP = false" />
         </div>
     </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, defineEmits } from 'vue';
+import CheckUpdate from './checkupdate.vue'; // 导入 checkupdate 组件
+import Exit from './exit.vue';
+import ModifyPassword from'./modifyPassword.vue';
+import beVIP from './beVIP.vue';
 
-const emit = defineEmits(); // 定义 emit
-const activeContent = ref('content1'); // 默认显示内容1
+const emit = defineEmits();
+const activeContent = ref('content1');
+const activeButton = ref(1);
+const showCheckUpdate = ref(false); // 控制 checkupdate 组件的显示
+const showExit=ref(false);
+const showModifyPassword=ref(false);
+const showbeVIP=ref(false);
 
 const closeModal = () => {
     emit('close'); // 触发关闭事件
 };
 
-const showContent = (content: string) => {
-    activeContent.value = content; // 根据按钮设置活动内容
+const setActiveButton = (buttonNumber: number) => {
+    activeButton.value = buttonNumber;
+    activeContent.value = `content${buttonNumber}`;
 };
 
+const checkForUpdates = () => {
+    showCheckUpdate.value = true; // 点击后显示 检查更新 窗口
+};
+
+const ForExit = () => {
+    showExit.value = true; // 点击后显示 退出登录 窗口
+};
+
+const ForModifyPassword = () => {
+    showModifyPassword.value = true; // 点击后显示 修改密码 窗口
+};
+
+const ForbeVIP=()=>{
+    showbeVIP.value=true;// 点击后显示 成为会员 窗口
+}
 </script>
+
+
 
 <style lang="scss" scoped>
 .modal-overlay {
     position: fixed; /* 使用 fixed 定位 */
     top: 0;
     left: 0;
-    background: rgba(0, 0, 0, 0.5); /* 半透明背景 */
+    background: rgba(0, 0, 0, 0); /* 半透明背景 */
     display: flex;
     justify-content: center; /* 水平居中 */
     align-items: center; /* 纵向居中 */
@@ -118,8 +187,7 @@ const showContent = (content: string) => {
     background: none; /* 清除按钮背景 */
     border: none; /* 清除按钮边框 */
     cursor: pointer; /* 鼠标悬停时显示手形光标 */
-    margin-left: 462px;
-    margin-top: 0px; /* 距离上面18px */
+    margin-left: auto; /* 自动调整到右侧 */
 }
 
 .close-icon {
@@ -139,23 +207,25 @@ const showContent = (content: string) => {
     padding: 10px; /* 内边距 */
     display: flex;
     flex-direction: column; /* 纵向排列按钮 */
-    border-right: 1px solid var(--, #CFD8E5)
+    border-right: 1px solid #CFD8E5; /* 侧边栏右边界 */
 }
 
-.sidebutton{
+.sidebutton {
     text-align: left;
     padding-left: 30px;
-}
-
-.sidebar button {
-    width: 100%;
-    height: 40px;
-    margin-top: 12px; /* 按钮间距 */
-    background-color: #FFFFFF; /* 按钮背景颜色 */
-    color: #373B52; /* 按钮文字颜色 */
+    width: 100%; /* 按钮宽度填充 */
+    height: 40px; /* 按钮高度 */
+    background-color: #FFFFFF; /* 默认背景颜色 */
+    color: #373B52; /* 默认文字颜色 */
     border: none; /* 去除默认边框 */
     border-radius: 5px; /* 圆角 */
+    margin-top: 12px; /* 按钮间距 */
     cursor: pointer; /* 鼠标悬停时显示手型 */
+}
+
+.active {
+    background-color: #5CA9F9; /* 激活时背景色 */
+    color: #FFFFFF; /* 激活时文字颜色 */
 }
 
 .content {
@@ -258,6 +328,7 @@ margin-left: 10px;
     margin-left: 150px;
     position: relative;
     bottom: 5px;
+    cursor: pointer;
 }
 
 .openVIP-btn{
@@ -276,6 +347,7 @@ margin-left: 10px;
     margin-left: 162px;
     position: relative;
     bottom: 5px;
+    cursor: pointer;
 }
 
 .VIP-icon{
@@ -284,5 +356,186 @@ margin-left: 10px;
     position: relative;
     margin-left: -72px;
     bottom: 2px;
+}
+
+.content2{
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
+.content2-textline1{
+    display: flex;
+    margin-top: 10px;
+    margin-bottom: 23px;
+}
+
+.content2-field{
+    font-family: PingFang SC;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 19.6px;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    color: #373B52;
+}
+
+.checkupdate-btn{
+    width: 92px;
+    height: 26px;
+    border-radius: 6px;
+    background-color: #5CA9F9;
+    font-family: PingFang SC;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16.8px;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    color: #FFFFFF;
+    border: none;
+    margin-left: 155px;
+    position: relative;
+    bottom: 5px;
+    cursor: pointer;
+}
+.update-title{
+    font-family: PingFang SC;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 19.6px;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    color: #373B52;
+    margin-bottom: 10px;
+}
+
+.update-content{
+    width: 430px;
+    height: 270px;
+    border: 1px solid #E0E2E6;
+    border-radius: 4px;
+    padding-top: 12px;
+    padding-left: 14px;
+    padding-right: 14px;
+}
+
+.content3{
+    padding-left: 20px;
+    padding-top: 20px;
+}
+
+.content3-textline{
+    width: 430px;
+    height: 26px;
+    margin-bottom: 10px;
+    display: flex;
+}
+
+.content3-field{
+    font-family: PingFang SC;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16.8px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    color: #373B52;
+    width: 204px;
+    margin-right: 134px;
+}
+
+.content3-btn1{
+    border: 1px solid #C6CFDC;
+    font-family: PingFang SC;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16.8px;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    border-radius: 6px;
+    color: #1E223C;
+    background-color: #FFFFFF;
+    position: relative;
+    bottom: 4px;
+    width: 92px;
+    height: 26px;
+    cursor: pointer;
+}
+.content3-btn2{
+    border: 1px solid #F53126;
+    font-family: PingFang SC;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16.8px;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    border-radius: 6px;
+    color: #F53126;
+    background-color: #FFFFFF;
+    position: relative;
+    bottom: 4px;
+    width: 92px;
+    height: 26px;
+    cursor: pointer;
+}
+.content3-btn3{
+    border: 1px solid #C6CFDC;
+    font-family: PingFang SC;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16.8px;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    border-radius: 6px;
+    color: #1E223C;
+    background-color: #FFFFFF;
+    position: relative;
+    bottom: 4px;
+    width: 92px;
+    height: 26px;
+    cursor: pointer;
+}
+
+.content4{
+    padding-top: 80px;
+}
+.sofia-icon{
+    width: 80px;
+    height: 80px;
+    margin-left: 195px;
+}
+.version{
+    font-family: PingFang SC;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 19.6px;
+    text-align: center;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    color: #373B52;
+}
+
+.content4-text1{
+    font-family: PingFang SC;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 19.6px;
+    text-align: center;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    color: #373B52;
+    margin-top: 100px;
+}
+
+.content4-text2{
+    font-family: PingFang SC;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 19.6px;
+    text-align: center;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+
+    color: #373B52;
+    margin-top: 10px;
 }
 </style>
