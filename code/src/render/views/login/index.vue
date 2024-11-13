@@ -481,17 +481,18 @@ function togglePasswordVisibility() {
 .phonenumberinput {
   width: 226px;
   height: 33px;
+
 }
 .phone-input {
     width: 100%; /* 使输入框宽度适应父容器 */
     height: 33px; /* 设置输入框高度 */
+    padding-left: 16px;
 }
 
 .phone-input::placeholder {
     font-size: 12px; /* 设置占位符字体大小 */
     color: #A7B5C9; /* 可选：设置占位符颜色 */
     position: relative;
-    left: 16px;
 }
 
 .phonenumberinput input {
@@ -500,6 +501,7 @@ function togglePasswordVisibility() {
   border: 1px solid #ccc;
   border-radius: 0px 4px 4px 0px;
   box-sizing: border-box;
+
 }
 
 .error-border {
@@ -571,13 +573,13 @@ function togglePasswordVisibility() {
     height: 33px; /* 设置文本框高度 */
     border-radius: 4px;
     border: 1px solid #C6CFDC;
+    padding-left: 16px;
 }
 
 .input-box::placeholder {
     font-size: 12px; /* 设置 placeholder 文字大小 */
     color: #A7B5C9; /* 可选：设置 placeholder 文字颜色 */
     position: relative;
-    left: 16px;
     line-height: 16.8px;
     font-weight: 400;
 }
@@ -612,7 +614,7 @@ function togglePasswordVisibility() {
   border-radius: 4px;
   border: 1px solid #C6CFDC;
   flex-grow: 1;
-  padding-right: 40px;
+  padding-left: 16px;
 }
 .toggle-button {
     position: absolute; /* 绝对定位按钮 */
@@ -627,7 +629,6 @@ function togglePasswordVisibility() {
   font-size: 12px; /* 设置 placeholder 文字大小 */
     color: #A7B5C9; /* 可选：设置 placeholder 文字颜色 */
     position: relative;
-    left: 16px;
     line-height: 16.8px;
     font-weight: 400;
 }
