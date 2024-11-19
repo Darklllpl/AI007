@@ -57,7 +57,7 @@
                         <div class="content1-textline2">
                             <div class="content1-field">手机号</div>
                             <div class="content1-value">+86 130****5678</div>
-                            <button class="changephonenumber-btn">更换手机号</button>
+                            <button class="changephonenumber-btn" @click="FormodifyPhone">更换手机号</button>
                         </div>
                         <div v-if="VIPstatus === 1" class="content1-textline3">
                             <div class="content1-field">会员状态</div>
@@ -126,6 +126,7 @@
 
             <ModifyPassword v-if="showModifyPassword" @close="showModifyPassword = false" />
             <beVIP v-if="showbeVIP" @close="showbeVIP = false" />
+            <modifyPhone v-if="showmodifyPhone" @close="showmodifyPhone = false"/>
         </div>
     </div>
 </template>
@@ -136,6 +137,7 @@ import CheckUpdate from './checkupdate.vue'; // 导入 checkupdate 组件
 import Exit from './exit.vue';
 import ModifyPassword from'./modifyPassword.vue';
 import beVIP from './beVIP.vue';
+import modifyPhone from './modifyPhone.vue';
 
 const emit = defineEmits();
 const activeContent = ref('content1');
@@ -144,6 +146,7 @@ const showCheckUpdate = ref(false); // 控制 checkupdate 组件的显示
 const showExit=ref(false);
 const showModifyPassword=ref(false);
 const showbeVIP=ref(false);
+const showmodifyPhone=ref(false);
 const VIPstatus = ref<number>(1); // 充值状态，1为会员，2为非会员
 
 const closeModal = () => {
@@ -169,6 +172,9 @@ const ForModifyPassword = () => {
 
 const ForbeVIP=()=>{
     showbeVIP.value=true;// 点击后显示 成为会员 窗口
+}
+const FormodifyPhone=()=>{
+    showmodifyPhone.value=true;
 }
 </script>
 

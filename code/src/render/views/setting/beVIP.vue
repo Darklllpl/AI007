@@ -76,7 +76,7 @@
                             class="rechargebutton rechargebutton1" 
                             :class="{ active: selectedRecharge === 15 }" 
                             @click="selectRecharge(15)">
-                            <div class="text-line1">连续包月</div>
+                            <div class="text-line1">开通一年</div>
                             <div class="textcontainer textcontainer1">
                                 <div class="text-line2">￥</div>
                                 <div class="text-line3">15</div>
@@ -87,8 +87,19 @@
                             class="rechargebutton rechargebutton2" 
                             :class="{ active: selectedRecharge === 149 }" 
                             @click="selectRecharge(149)">
-                            <div class="text-line1">连续包年</div>
+                            <div class="text-line1">开通两年</div>
                             <div class="textcontainer textcontainer2">
+                                <div class="text-line2">￥</div>
+                                <div class="text-line3">149</div>
+                            </div>
+                            <div class="text-line4">¥299</div>
+                        </div>
+                        <div 
+                            class="rechargebutton rechargebutton3" 
+                            :class="{ active: selectedRecharge === 149 }" 
+                            @click="selectRecharge(149)">
+                            <div class="text-line1">开通三年</div>
+                            <div class="textcontainer textcontainer3">
                                 <div class="text-line2">￥</div>
                                 <div class="text-line3">149</div>
                             </div>
@@ -106,7 +117,7 @@
                         <div class="rtext5">微信支付</div>
                     </div>
 
-                    <button class="buybtn">确认购买</button>
+                    <button class="buybtn" @click="forshowPay">确认购买</button>
 
                     <div class="rtextline3">
                         <img
@@ -128,19 +139,22 @@
                         <div class="rtext6">同意</div>
                         <a href="xxxxxx协议" class="link">xxxxxx协议</a>
                     </div>
-
                 </div>
             </div>
         </div>
     </div>
+
+    <pay :rechargeAmount="selectedRecharge" v-if="showPay" @close="showPay = false"/>
 </template>
 
 <script lang="ts" setup>
 import { ref, defineEmits } from 'vue';
+import pay from './pay.vue';
 
 const emit = defineEmits();
 const selectedRecharge = ref<number | null>(15); // 用于存储选中的充值金额
 const isFirstImage = ref(false); // 控制当前显示的图片
+const showPay=ref(false);
 
 const selectRecharge = (amount: number) => {
     selectedRecharge.value = amount; // 更新选中的充值金额
@@ -154,6 +168,9 @@ function toggleImage() {
 const closeModal = () => {
     emit('close'); // 触发关闭事件
 };
+const forshowPay=()=>{
+    showPay.value=true;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -337,11 +354,10 @@ color: #1E223C;
     padding-right: 20px;
 }
 .rechargebutton-container {
-    width: 320px;
     height: 120px;
     display: flex;
-    gap: 30.68px;
-    padding-left: 24.66px;
+    gap: 16px;
+    padding-left: 0px;
 }
 .rechargebutton {
     border: 1px solid transparent; /* 默认边框颜色 */
@@ -381,14 +397,21 @@ color: #373B52;
     width: 43.91px;
     height: 37.5px;
     display: flex;
-    margin-left: 38.05px;
+    margin-left: 26.05px;
     margin-top: 25px;
 }
 .textcontainer2{
     width: 60.91px;
     height: 37.5px;
     display: flex;
-    margin-left: 29.55px;
+    margin-left: 17.55px;
+    margin-top: 25px;
+}
+.textcontainer3{
+    width: 60.91px;
+    height: 37.5px;
+    display: flex;
+    margin-left: 17.55px;
     margin-top: 25px;
 }
 .text-line2 {
@@ -424,18 +447,18 @@ text-decoration-skip-ink: none;
 }
 
 .text-line4{
-    margin-left: 45px;
+    margin-left: 38px;
     width: 20px;
     height: 15px;
     font-family: PingFang SC;
-font-size: 10.91px;
-font-weight: 400;
-line-height: 15.27px;
-text-align: left;
-text-decoration-line: line-through;
-text-underline-position: from-font;
-text-decoration-skip-ink: none;
-color: #6A6C7D;
+    font-size: 10.91px;
+    font-weight: 400;
+    line-height: 15.27px;
+    text-align: left;
+    text-decoration-line: line-through;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    color: #6A6C7D;
 }
 
 .rtext4{
@@ -483,6 +506,7 @@ border: none;
 border-radius: 4px;
 margin-left: 16px;
 margin-top: 12px;
+cursor: pointer;
 }
 
 .rtextline3{
@@ -512,13 +536,13 @@ margin-left: 6px;
     text-decoration: none; /* 去掉链接下划线 */
     color: #5CA9F9; /* 链接颜色 */
     font-family: PingFang SC;
-font-size: 12px;
-font-weight: 400;
-line-height: 16.8px;
-text-align: left;
-text-underline-position: from-font;
-text-decoration-skip-ink: none;
-margin-left: 8px;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16.8px;
+    text-align: left;
+    text-underline-position: from-font;
+    text-decoration-skip-ink: none;
+    margin-left: 8px;
     bottom: 2px;
 }
 

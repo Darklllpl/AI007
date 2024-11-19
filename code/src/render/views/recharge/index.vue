@@ -1,78 +1,88 @@
 <template>
-    <div class="container">
-        <div class="header">
-            <span class="title">充值</span>
-            <button class="close-button" @click="goAIchat">
-                <img src="../../assets/img/recharge/close.png" alt="关闭" class="close-icon" />
-            </button>
-        </div>
+    <div class="modal-overlay" @click.self="closeModal">
+        <div class="container">
+            <div class="header">
+                <span class="title">充值</span>
+                <button class="close-button" @click="closeModal">
+                    <img src="../../assets/img/recharge/close.png" alt="关闭" class="close-icon" />
+                </button>
+            </div>
 
-        <div v-if="rechargestatus === 1" class="Rechargemessage-box">
-            <img src="../../assets/img/recharge/RechargeSuccessfully.png" alt="充值成功" class="Rechargemessage-icon">
-            <div class="Rechargemessage-text">充值成功</div>
-        </div>
-        <div v-else-if="rechargestatus === 2" class="Rechargemessage-box">
-            <img src="../../assets/img/recharge/RechargeFailure.png" alt="充值失败" class="Rechargemessage-icon">
-            <div class="Rechargemessage-text">充值失败</div>
-        </div>
+            <div v-if="rechargestatus === 1" class="Rechargemessage-box">
+                <img src="../../assets/img/recharge/RechargeSuccessfully.png" alt="充值成功" class="Rechargemessage-icon">
+                <div class="Rechargemessage-text">充值成功</div>
+            </div>
+            <div v-else-if="rechargestatus === 2" class="Rechargemessage-box">
+                <img src="../../assets/img/recharge/RechargeFailure.png" alt="充值失败" class="Rechargemessage-icon">
+                <div class="Rechargemessage-text">充值失败</div>
+            </div>
 
-        <div class="text-box">
-            <div class="account">账号：177877763521</div>
-        </div>
+            <div class="text-box">
+                <div class="account">账号：177877763521</div>
+            </div>
 
-        <div class="rechargebutton-container">
-            <div 
-                class="rechargebutton rechargebutton1" 
-                :class="{ active: selectedRecharge === 5 }" 
-                @click="selectRecharge(5)">
-                <div class="text-line1">加油包</div>
-                <div class="textcontainer">
-                    <div class="text-line2">￥</div>
-                    <div class="text-line3">5</div>
+            <div class="rechargebutton-container">
+                <div 
+                    class="rechargebutton rechargebutton1" 
+                    :class="{ active: selectedRecharge === 5 }" 
+                    @click="selectRecharge(5)">
+                    <div class="text-line1">加油包</div>
+                    <div class="textcontainer">
+                        <div class="text-line2">￥</div>
+                        <div class="text-line3">5</div>
+                    </div>
+                </div>
+                <div 
+                    class="rechargebutton rechargebutton2" 
+                    :class="{ active: selectedRecharge === 15 }" 
+                    @click="selectRecharge(15)">
+                    <div class="text-line1">加油包</div>
+                    <div class="textcontainer">
+                        <div class="text-line2">￥</div>
+                        <div class="text-line3">15</div>
+                    </div>
+                </div>
+                <div 
+                    class="rechargebutton rechargebutton3" 
+                    :class="{ active: selectedRecharge === 99 }" 
+                    @click="selectRecharge(99)">
+                    <div class="text-line1">加油包</div>
+                    <div class="textcontainer">
+                        <div class="text-line2">￥</div>
+                        <div class="text-line3">99</div>
+                    </div>
                 </div>
             </div>
-            <div 
-                class="rechargebutton rechargebutton2" 
-                :class="{ active: selectedRecharge === 15 }" 
-                @click="selectRecharge(15)">
-                <div class="text-line1">加油包</div>
-                <div class="textcontainer">
-                    <div class="text-line2">￥</div>
-                    <div class="text-line3">15</div>
-                </div>
+
+            <div class="note">备注：5元支持XXX文字交互</div>
+
+            <div class="wechatnote-container">
+                <img src="../../assets/img/recharge/wechat.png" alt="wechat" class="wechat-icon" />
+                <div class="wechatnote">微信扫码，支付 {{ selectedRecharge }} 元</div>
             </div>
-            <div 
-                class="rechargebutton rechargebutton3" 
-                :class="{ active: selectedRecharge === 99 }" 
-                @click="selectRecharge(99)">
-                <div class="text-line1">加油包</div>
-                <div class="textcontainer">
-                    <div class="text-line2">￥</div>
-                    <div class="text-line3">99</div>
-                </div>
-            </div>
+
+
+            <img src="../../assets/img/recharge/QRcode.png" alt="QRcode" class="QRcode-icon"/>
+            <div class="bottom"></div>
         </div>
-
-        <div class="note">备注：5元支持XXX文字交互</div>
-
-        <div class="wechatnote-container">
-            <img src="../../assets/img/recharge/wechat.png" alt="wechat" class="wechat-icon" />
-            <div class="wechatnote">微信扫码，支付 {{ selectedRecharge }} 元</div>
-        </div>
-
-        <img src="../../assets/img/recharge/QRcode.png" alt="QRcode" class="QRcode-icon"/>
-        <div class="bottom"></div>
     </div>
+
+    
 </template>
 
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, defineEmits } from "vue";
 import { useRouter } from "vue-router";
 
+const emit = defineEmits();
 const router = useRouter();
 const selectedRecharge = ref<number | null>(5); // 当前选中的充值金额
 const rechargestatus = ref<number>(1); // 充值状态，1为成功，2为失败
+
+const closeModal = () => {
+    emit('close'); // 触发关闭事件
+};
 
 const goAIchat = () => {
   router.push("/AIchat");
@@ -88,14 +98,22 @@ const selectRecharge = (amount: number) => {
 
 
 <style lang="scss" scoped>
+.modal-overlay {
+    position: absolute; /* 使用 fixed 定位 */
+    background: rgba(0, 0, 0, 0); /* 半透明背景 */
+    z-index: 2000;
+    width: 1200px;
+    height: 768px;
+}
 .container {
     width: 304px;
     height: 414px;
     border-radius: 4px; /* 添加四个角的圆角 */
     overflow: hidden;   /* 确保内容不会超出圆角边界 */
     border-bottom-left-radius: 4px;  
-    border-bottom-right-radius: 4px; 
-    overflow: hidden;              /* 确保内容不会超出圆角边界 */
+    background-color: #fff;
+    margin-top: 177px;
+    margin-left: 448px;
 }
 
 .header {
@@ -115,7 +133,7 @@ const selectRecharge = (amount: number) => {
     width: 32px;
     height: 22px;
     position: absolute;
-    top: 16px;
+    margin-top: 16px;
     margin-left: 136px;
     color: #FFFFFF;
 }
@@ -123,12 +141,12 @@ const selectRecharge = (amount: number) => {
 .close-button {
     width: 24px;
     height: 24px;
-    position: absolute;
-    top: 15px;
-    margin-left: 264px;
     border: none; /* 去掉边框 */
     background: transparent; /* 去掉背景 */
     cursor: pointer; /* 鼠标悬停时显示为指针 */
+    position: absolute;
+    margin-top: 16px;
+    margin-left: 264px;
 }
 
 .close-button:focus {
@@ -172,8 +190,8 @@ margin-left: 2px;
 .text-box {
     width: 272px;
     height: 17px;
-    position: absolute;
-    top: 66px;
+    position: relative;
+    top: -5px;
     margin-left: 16px;
 }
 
@@ -191,9 +209,8 @@ margin-left: 2px;
 .rechargebutton-container {
     width: 272px;
     height: 90px;
-    position: absolute;
-    top: 95px;
     margin-left: 16px;
+    margin-top: 12px;
     display: flex;
 }
 
@@ -242,9 +259,9 @@ margin-left: 2px;
     width: 28px;
     height: 34px;
     display: flex;
-    position: absolute;
-    top: 32px;
+    position: relative;
     margin-left: 26px;
+    margin-top: 14px;
 }
 
 .text-line2 {
@@ -287,7 +304,7 @@ margin-left: 2px;
     text-decoration-skip-ink: none;
     color: #9BA3AF;
     position: relative;
-    top: 135px;
+    top: 4px;
     margin-left: 16px;
 }
 
@@ -295,8 +312,8 @@ margin-left: 2px;
     width: 146px;
     height: 20px;
     display: flex;
-    position: absolute;
-    top: 220px;
+    position: relative;
+    top: 14px;
     margin-left: 79px;
 }
 
@@ -321,16 +338,16 @@ margin-left: 2px;
 .QRcode-icon{
     width: 130px;
     height: 130px;
-    position: absolute;
-    top: 248px;
+    position: relative;
+    top: 17px;
     margin-left: 87px;
 }
 
 .bottom{
     height: 20px;
     width: 304px;
-    position: absolute;
-    top: 394px;
+    position: relative;
+    top: 37px;
     background-color: #5CA9F9;
     border-bottom-left-radius: 4px;  
     border-bottom-right-radius: 4px; 

@@ -22,11 +22,6 @@
                         <img src="../../assets/img/AIchat/tips-buttom.png" alt="打开通知" class="tips-buttom-icon" />
                     </div>
                 </button>
-
-                <!-- 确保 TipsModal 被包括在这里 -->
-                <TipsModal v-if="isTipsModalVisible" @close="closeTipsModal" />
-                <!-- 确保 SettingModal 被包括在这里 -->
-                <SettingModal v-if="isSettingModalVisible" @close="closeSettingModal" />
             </div>
 
             <button class="setting-button" @click="opensettingModal">
@@ -72,7 +67,7 @@
                     <div class="bottext">@大模型的能力由ChatGPT提供</div>
                     <img src="../../assets/img/AIchat/petrol.png" alt="搜索" class="petrol-icon" />
                     <div class="token">约剩余XXX字数</div>
-                    <button class="recharge-button" @click="goRecharge">充值</button>
+                    <button class="recharge-button" @click="openRecharge">充值</button>
                 </div>
                 <div class="progressbar-box">
                     <div class="progress-background">
@@ -112,6 +107,15 @@
                 </div>
             </div>
         </div>
+
+
+        <!-- 确保 TipsModal 被包括在这里 -->
+        <TipsModal v-if="isTipsModalVisible" @close="closeTipsModal" />
+        <!-- 确保 SettingModal 被包括在这里 -->
+        <SettingModal v-if="isSettingModalVisible" @close="closeSettingModal" />
+        <!-- 确保 RechargeModal 被包括在这里 -->
+        <RechargeModal v-if="isRechargeModalVisible" @close="closeRecharge" />
+
     </div>
 </template>
 
@@ -120,6 +124,7 @@ import { useRouter } from "vue-router";
 import { ref } from 'vue';
 import TipsModal from './tipsmodal.vue';  // 确保导入
 import SettingModal from '../setting/index.vue';  // 导入设置组件
+import RechargeModal from '../recharge/index.vue'
 
 const router = useRouter();
 const selectedBot = ref<string | null>(null);
@@ -131,15 +136,21 @@ const messages = ref<{ avatar: string; text: string; }[]>([]); // 消息列表
 // 控制提示框和设置框的显示状态
 const isTipsModalVisible = ref(false);
 const isSettingModalVisible = ref(false); // 设置窗口的显示状态
+const isRechargeModalVisible =ref(false);
 
 // 跳转到主页的函数
 const goHome = () => {
   router.push("/");
 };
 
-// 跳转到充值界面
-const goRecharge = () => {
-  router.push("/recharge");
+// 打开充值界面
+const openRecharge = () => {
+    isRechargeModalVisible.value=true;
+};
+
+// 关闭充值界面
+const closeRecharge = () => {
+    isRechargeModalVisible.value=false;
 };
 
 // 打开提示框

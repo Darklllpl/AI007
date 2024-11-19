@@ -105,7 +105,7 @@ margin-top: 20px;
 
 .password{
     border: 1px solid #F5F5F6;
-    background-color: #F9FBFD;
+    background-color: #FFFFFF;
 
     width: 360px;
     height: 40px;
@@ -115,7 +115,7 @@ margin-top: 20px;
 }
 
 .password::placeholder{
-    color: #A7B5C9;
+    color: #BFBFBF;
     font-family: PingFang SC;
 font-size: 14px;
 font-weight: 400;

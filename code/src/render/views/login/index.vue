@@ -85,7 +85,7 @@
         <button 
             class="get-code-button" 
             :disabled="isCounting || !isVerified"
-            @click="getVerificationCode">
+            @click="GetVerificationCode">
             {{ buttonText }} 
         </button>
       </div>
@@ -108,7 +108,7 @@
       </div>
 
       <div class="loginbutton-box">
-        <button @click="onLogin" class="login-button">登 录</button>
+        <button @click="Login" class="login-button">登 录</button>
       </div>
 
       <div class="private-box">
@@ -153,9 +153,11 @@
 </template>
 
 <script setup lang="ts">
-import { login } from "@/render/api/login";
+import { login,getVerificationCode } from "@/render/api/login";
 import { useRouter } from "vue-router";
 import { ref } from 'vue';
+import axios from "axios";
+import { da } from "element-plus/es/locale";
 
 const router = useRouter();
 const sliderPosition = ref(0);
@@ -183,34 +185,40 @@ const isVerified = ref(false); // 控制验证通过状态
 const sliderTextColor = ref('#1E223C'); // 初始化文字颜色
 
 // 登录函数
-const onLogin = () => {
-
-  // 检查 isFirst 变量
+const Login = async () => {
+  // 检查是否同意服务协议
   if (isFirstImage.value) {
-    // 如果 isFirst 为 false，则弹出窗口并返回
     showModal.value = true;
     return; // 不执行后续操作
   }
 
-  const loginData = showVerificationBox.value 
-    ? { phone: phoneNumber.value, code: verificationCode.value } 
-    : { name: phoneNumber.value, password: password.value };
-  
-  login(loginData) // 根据输入类型传入相应数据
-    .then((res) => {
-      console.log("res.data.token", res.data.token);
-      errorCode.value = null; // 清除错误码
-    })
-    .catch((error) => {
-      if (error.response) {
-        //console.error("Error status:", error.response.status);
-        const code = error.response.status; // 获取后端返回的错误码
-        errorCode.value = code; // 更新错误码
-      } else {
-        //console.error("Error message:", error.message);
-      }
-    });
+  // 构建 loginData 对象
+  const loginData = {
+    loginType: showVerificationBox.value ? 'verification' : 'password', // 根据登录方式设置 loginType
+    phone: phoneNumber.value,
+    verificationCode: showVerificationBox.value ? verificationCode.value : null, // 如果是验证码登录，传入验证码
+    password: !showVerificationBox.value ? password.value : null // 如果是密码登录，传入密码
+  };
+
+  try {
+    // 使用抽离出的 login 函数
+    const response = await login(loginData);
+    console.log("登录成功:", response.token);
+    errorCode.value = null; // 清除错误码
+
+    // 登录成功后，跳转到用户主页
+    await router.push("/"); // 根据需要修改目标路径
+
+  } catch (error) {
+    if (error.response) {
+      const code = error.response.status; // 获取后端返回的错误码
+      errorCode.value = code; // 更新错误码
+    } else {
+      console.error("错误信息:", error.message);
+    }
+  }
 };
+
 
 function closeModal(){
   showModal.value = false;
@@ -279,7 +287,7 @@ const onMouseDown = (event: MouseEvent) => {
 };
 
 // 获取验证码
-function getVerificationCode() {
+async function GetVerificationCode() {
   if (!isVerified.value) return; // 如果未验证通过，则不执行获取验证码逻辑
   
   isCounting.value = true;
@@ -305,8 +313,24 @@ function getVerificationCode() {
     }
   }, 1000);
 
-  // 这里可以添加获取验证码的网络请求逻辑
+  const data={
+    phone: phoneNumber.value
+  };
+  // 发送验证码请求
+  try {
+    const response = await getVerificationCode(data)
+    
+    if (response.code) {
+      console.log('验证码已发送');
+    } else {
+      console.error('发送验证码失败:', response.message);
+      // 可以处理更多错误逻辑
+    }
+  } catch (error) {
+    console.error('请求出现错误:', error);
+  }
 }
+
 
 
 // 更新按钮文本
