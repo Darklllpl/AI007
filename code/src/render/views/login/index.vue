@@ -19,14 +19,11 @@
     </div>
 
     <div class="error-box">
-      <div v-if="errorCode === 1" class="errorstatus1">
-          <img src="../../assets/img/login/error-icon.png" alt="错误提示" class="error-icon"> 手机号或验证码错误
+      <div v-if="errorStatus != null" class="errorstatus">
+          <img src="../../assets/img/login/error-icon.png" alt="错误提示" class="error-icon"> {{tipsmsg}}
       </div>
-      <div v-if="errorCode === 2" class="errorstatus2">
-          <img src="../../assets/img/login/error-icon.png" alt="错误提示" class="error-icon"> 验证码已过期
-      </div>
-      <div v-if="showSuccessMessage" class="rightstatus1">
-        <img src="../../assets/img/login/greentick.png" alt="发送提示" class="greentick"> 验证码已发送
+      <div v-if="rightStatus != null" class="rightstatus">
+        <img src="../../assets/img/login/greentick.png" alt="发送提示" class="greentick"> {{tipsmsg}}
       </div>
     </div>
 
@@ -52,9 +49,9 @@
 
 
     <div class="loginfunction-container">
-      <div class="phonenumber-box" :class="{ 'error-border': errorCode === 1 }">
-        <div class="phonenumber-pre" :class="{ 'error-border': errorCode === 1 }">
-          <select :class="{ 'error-border': errorCode === 1 }">
+      <div class="phonenumber-box" :class="{ 'error-border': errorStatus === 1 || errorStatus === 3 }">
+        <div class="phonenumber-pre" :class="{ 'error-border': errorStatus === 1 || errorStatus === 3 }">
+          <select :class="{ 'error-border': errorStatus === 1 }">
             <option value="+86">+86</option>
             <option value="+1">+1</option>
             <option value="+44">+44</option>
@@ -79,7 +76,7 @@
         <input 
           type="text" 
           class="input-box" 
-          :class="{ 'error-border': errorCode === 1 || errorCode === 2 }" 
+          :class="{ 'error-border': errorStatus === 1 || errorStatus === 2 }" 
           placeholder="短信验证码" 
           v-model="verificationCode">
         <button 
@@ -98,6 +95,7 @@
             v-model="password"
             :type="isPasswordVisible ? 'text' : 'password'"
             class="codeinput-box"
+            :class="{ 'error-border': errorStatus === 3 }"
             placeholder="请输入密码"
           />
           <button @click="togglePasswordVisibility" class="toggle-button">
@@ -157,7 +155,6 @@ import { login,getVerificationCode } from "@/render/api/login";
 import { useRouter } from "vue-router";
 import { ref } from 'vue';
 import axios from "axios";
-import { da } from "element-plus/es/locale";
 
 const router = useRouter();
 const sliderPosition = ref(0);
@@ -168,7 +165,9 @@ const goHome = () => {
   router.push("/");
 };
 
-const errorCode = ref(null); // 存储错误码
+const errorStatus = ref(null); // 存储错误码
+const tipsmsg = ref(null);// 存储提示信息
+const rightStatus = ref(null);//存储正常码
 const phoneNumber = ref(''); // 存储手机号
 const verificationCode = ref(''); // 存储验证码
 const password = ref('');  // 绑定密码输入框的值
@@ -180,42 +179,58 @@ const showModal = ref(false); // 定义 showModal 变量
 const isCounting = ref(false); // 倒计时状态
 const countdown = ref(60); // 倒计时初始值
 const buttonText = ref('获取验证码'); // 按钮文字
-const showSuccessMessage = ref(false); // 控制成功提示是否显示
 const isVerified = ref(false); // 控制验证通过状态
 const sliderTextColor = ref('#1E223C'); // 初始化文字颜色
 
-// 登录函数
+//登录函数
 const Login = async () => {
-  // 检查是否同意服务协议
   if (isFirstImage.value) {
     showModal.value = true;
-    return; // 不执行后续操作
+    return;
   }
 
-  // 构建 loginData 对象
-  const loginData = {
-    loginType: showVerificationBox.value ? 'verification' : 'password', // 根据登录方式设置 loginType
+  const data = {
+    loginType: showVerificationBox.value ? '1' : '2',
     phone: phoneNumber.value,
-    verificationCode: showVerificationBox.value ? verificationCode.value : null, // 如果是验证码登录，传入验证码
-    password: !showVerificationBox.value ? password.value : null // 如果是密码登录，传入密码
+    verificationCode: showVerificationBox.value ? verificationCode.value : "666666",
+    password: !showVerificationBox.value ? password.value : "666666"
   };
 
+  if (!phoneNumber.value || (!verificationCode.value && !password.value)) {
+    console.error('参数不能为空');
+    return;
+  }
+
   try {
-    // 使用抽离出的 login 函数
-    const response = await login(loginData);
-    console.log("登录成功:", response.token);
-    errorCode.value = null; // 清除错误码
+    const response = await axios.post('https://api.eliya.fun/userLogin/login', null, {
+      params: data // 将参数放入请求的查询字符串
+    });
 
-    // 登录成功后，跳转到用户主页
-    await router.push("/"); // 根据需要修改目标路径
-
-  } catch (error) {
-    if (error.response) {
-      const code = error.response.status; // 获取后端返回的错误码
-      errorCode.value = code; // 更新错误码
-    } else {
-      console.error("错误信息:", error.message);
+    console.log(response.data)
+    if (response.data.code === 200) {
+      const token=response.data.data.token;
+      // 设置请求头
+      const headers = {
+        Authorization: `Bearer ${token}`, // 替换为你的 token
+      };
+      if(response.data.data.isFirstLogin=== true){
+        router.push("/setPassword")
+      } else{
+        router.push("/AIchat");
+      }
+    }else if(response.data.code === 500){
+      rightStatus.value=null;
+      tipsmsg.value=response.data.msg;
+      if(response.data.msg==='验证码输入有误'){
+        errorStatus.value=2;
+      }else if(response.data.msg==='验证码过期'){
+        errorStatus.value=1;
+      }else if(response.data.msg==='密码错误'){
+        errorStatus.value=3;
+      }
     }
+  } catch (error) {
+    console.error('登录失败:', error.response ? error.response.data : error.message);
   }
 };
 
@@ -230,6 +245,7 @@ function closeModal1(){
 
 // 鼠标按下事件
 const onMouseDown = (event: MouseEvent) => {
+  event.preventDefault(); // 阻止默认行为
   const startX = event.clientX;
   const sliderBox = event.currentTarget.parentElement as HTMLElement; // 获取滑块区域容器
   const sliderWidth = sliderBox.clientWidth;
@@ -270,14 +286,19 @@ const onMouseDown = (event: MouseEvent) => {
 
   const onMouseUp = () => {
     // 判断滑块是否到达最右边
-    if (sliderPosition.value >= sliderWidth - 29) {
+    if (sliderPosition.value < sliderWidth - 29) {
+      sliderPosition.value = 0; // 若未到达最右边，则滑块返回起点
+      sliderBox.style.background = '#E7E9E8'; // 还原背景颜色
+      sliderText.value = '按住滑块，拖到最后边'; // 重置提示文字
+      sliderTextColor.value = '#1E223C'; // 恢复默认颜色
+      isVerified.value = false; // 设置为未通过状态
+    } else {
+      // 到达最右边
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
-      return; // 到达最右边后，结束拖动
+      return; // 结束拖动
     }
 
-    // 还原背景颜色
-    sliderBox.style.background = '#E7E9E8';
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
   };
@@ -286,49 +307,53 @@ const onMouseDown = (event: MouseEvent) => {
   document.addEventListener('mouseup', onMouseUp);
 };
 
+
 // 获取验证码
 async function GetVerificationCode() {
-  if (!isVerified.value) return; // 如果未验证通过，则不执行获取验证码逻辑
+  if (!isVerified.value) {
+    return; // 如果未验证通过，则不执行获取验证码逻辑
+  }
   
-  isCounting.value = true;
-  countdown.value = 60; // 初始化倒计时为60秒
-  updateButtonText(); // 更新按钮文本
+  const data = {
+    phone: phoneNumber.value
+  };
 
-  // 显示验证码发送成功的提示
-  showSuccessMessage.value = true;
+  // 发送验证码请求，构造查询参数
+  const response = await axios.get(`https://api.eliya.fun/userLogin/getVerificationCode`, { 
+    params: data    // 将 data 作为查询参数传递
+  });
+  
+  // 定义 response 返回的数据格式
+  if (response.data.code===200) {
+    // 显示验证码发送成功的提示
+    rightStatus.value = true;
+    tipsmsg.value=response.data.msg;
+
+    //按钮倒计时
+    isCounting.value = true;
+    countdown.value = 60; // 初始化倒计时为60秒
+    updateButtonText(); // 更新按钮文本
+
+    const timer = setInterval(() => {
+      countdown.value--;
+      updateButtonText(); // 更新按钮文本
+
+      if (countdown.value === 0) {
+        clearInterval(timer);
+        isCounting.value = false;
+        buttonText.value = '获取验证码'; // 倒计时结束后恢复文本
+      }
+    }, 1000);
+  } else if(response.data.code===500){
+    errorStatus.value=3;
+    tipsmsg.value=response.data.msg;
+  }
 
   // 设置5秒钟后隐藏提示
   setTimeout(() => {
-    showSuccessMessage.value = false; // 隐藏提示
+    rightStatus.value = null; // 隐藏提示
+    errorStatus.value = null; // 隐藏提示
   }, 5000);
-
-  const timer = setInterval(() => {
-    countdown.value--;
-    updateButtonText(); // 更新按钮文本
-
-    if (countdown.value === 0) {
-      clearInterval(timer);
-      isCounting.value = false;
-      buttonText.value = '获取验证码'; // 倒计时结束后恢复文本
-    }
-  }, 1000);
-
-  const data={
-    phone: phoneNumber.value
-  };
-  // 发送验证码请求
-  try {
-    const response = await getVerificationCode(data)
-    
-    if (response.code) {
-      console.log('验证码已发送');
-    } else {
-      console.error('发送验证码失败:', response.message);
-      // 可以处理更多错误逻辑
-    }
-  } catch (error) {
-    console.error('请求出现错误:', error);
-  }
 }
 
 
@@ -337,7 +362,6 @@ async function GetVerificationCode() {
 function updateButtonText() {
   buttonText.value = isCounting.value ? `重新获取(${countdown.value}s)` : '获取验证码';
 }
-
 
 
 // 切换验证码和密码登录方式
@@ -428,52 +452,41 @@ function togglePasswordVisibility() {
 
 .error-box {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  position: relative;
-  top:30px;
-  left: 93px;
+  justify-content: center; /* 水平居中 */
+  align-items: flex-start; /* 垂直对齐（根据需要调整） */
+  height: 25px; /* 设置父容器的高度以便居中 */
 }
 
-.errorstatus1, .errorstatus2 {
-    position: absolute; /* 设置为绝对定位 */
-    top: 0; /* 重叠在顶部 */
-    left: 0; /* 重叠在左边 */
-    width: 144px;
-    height: 25px;
+.errorstatus, .rightstatus {
+    margin-top: 30px;
+    min-width: 108px; /* 最小宽度 */
+    max-width: 300px; /* 可选：设置最大宽度避免过宽 */
+    height: 25px; /* 高度自适应内容 */
     text-align: center; /* 文本居中对齐 */
     background-color: #FFFFFF;
-    border: 1px solid #C6CFDC;
     border-radius: 4px;
     font-size: 12px;
-    color: #F53126;
     display: flex; /* 使用 Flexbox */
     justify-content: center; /* 水平居中 */
     align-items: center; /* 垂直居中 */
+    box-shadow: 0px 2px 12.5px 0px #0000001C;
+    padding-left: 8px;
+    padding-right: 8px;
 }
-
+.errorstatus {
+    border: none;
+    color: #F53126;
+}
+.rightstatus {
+    border: 1px solid #C6CFDC;
+    color: #00B978;
+}
 .error-icon {
     width: 16px; /* 设置图标宽度 */
     height: 16px; /* 设置图标高度 */
     margin-right: 3px; /* 图标和文本之间的间距 */
 }
-.rightstatus1{
-  position: absolute; /* 设置为绝对定位 */
-    top: 0; /* 重叠在顶部 */
-    left: 0; /* 重叠在左边 */
-    width: 144px;
-    height: 25px;
-    text-align: center; /* 文本居中对齐 */
-    background-color: #FFFFFF;
-    border: 1px solid #C6CFDC;
-    border-radius: 4px;
-    font-size: 12px;
-    color: #00B978;
-    display: flex; /* 使用 Flexbox */
-    justify-content: center; /* 水平居中 */
-    align-items: center; /* 垂直居中 */
-}
+
 .greentick{
   width: 16px; /* 设置图标宽度 */
   height: 16px; /* 设置图标高度 */
@@ -549,6 +562,7 @@ function togglePasswordVisibility() {
   top: 49px;
   border: 1px solid #C6CFDC;
   border-radius: 4px;
+  user-select: none; /* 禁止选中文本 */
 }
 
 .slider {
@@ -559,6 +573,7 @@ function togglePasswordVisibility() {
   cursor: pointer;
   border-radius: 4px;
   border: 1px solid #C6CFDC;
+  user-select: none; /* 禁止选中文本 */
 }
 
 .arrow {

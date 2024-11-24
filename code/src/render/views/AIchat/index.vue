@@ -40,20 +40,11 @@
                     <div class="text-container">
                         <div class="text-top">
                             <div class="text-line1">伊利亚</div>
-                            <div class="chattime">15:00</div>
+                            <div class="chattime">{{ lastChatTime }}</div>
                         </div>
                         <div class="text-buttom">
-                            <div class="text-line2">请问您需要什么服务...</div>
+                            <div class="text-line2">{{ lastText }}</div>
                             <img src="../../assets/img/AIchat/bot.png" alt="机器人" class="bot-image" />
-                        </div>
-                    </div>
-                </button>
-
-                <button class="aibot-container2" @click="selectAIBot('其他机器')">
-                    <div class="text-container">
-                        <div class="text-top">
-                            <div class="text-line1">其他机器人</div>
-                            <div class="chattime">15:00</div>
                         </div>
                     </div>
                 </button>
@@ -76,19 +67,12 @@
                 </div>
 
                 <div class="chat-content">
-                    <div class="message received-message">
-                        <img src="../../assets/img/AIchat/Sofia.png" alt="Bot" class="avatar" />
-                        <div class="message-text">请问您需要什么服务</div>
-                    </div>
-                    <div class="message sent-message">
-                        <img src="../../assets/img/AIchat/user.png" alt="User" class="avatar" />
-                        <div class="message-text">请问您需要什么服务</div>
-                    </div>
-                    <div class="message sent-message" v-for="(msg, index) in messages" :key="index">     
+                    <div class="message received-message" v-for="(msg, index) in messages" :key="index" :class="{ 'sent-message': msg.type === '0' }">
                         <img :src="msg.avatar" alt="User" class="avatar" />
-                        <div class="message-text">{{ msg.text }}</div>
+                        <div class="message-text" v-html="msg.content"></div> <!-- 只保留 v-html -->
                     </div>
                 </div>
+
 
                 <div class="input-container">
                     <div class="char-count">{{ charCount }}/500</div>
@@ -108,97 +92,235 @@
             </div>
         </div>
 
-
-        <!-- 确保 TipsModal 被包括在这里 -->
         <TipsModal v-if="isTipsModalVisible" @close="closeTipsModal" />
-        <!-- 确保 SettingModal 被包括在这里 -->
         <SettingModal v-if="isSettingModalVisible" @close="closeSettingModal" />
-        <!-- 确保 RechargeModal 被包括在这里 -->
         <RechargeModal v-if="isRechargeModalVisible" @close="closeRecharge" />
-
     </div>
 </template>
 
 <script lang="ts" setup>
 import { useRouter } from "vue-router";
-import { ref } from 'vue';
-import TipsModal from './tipsmodal.vue';  // 确保导入
-import SettingModal from '../setting/index.vue';  // 导入设置组件
-import RechargeModal from '../recharge/index.vue'
+import { ref, onMounted, nextTick } from 'vue';
+import TipsModal from './tipsmodal.vue';  
+import SettingModal from '../setting/index.vue';  
+import RechargeModal from '../recharge/index.vue';
+import { getChatStream, getChatList } from "@/render/api/AIchat";
+import axios from "axios";
 
 const router = useRouter();
 const selectedBot = ref<string | null>(null);
-const progress = ref(50); // 设置初始进度为50%
-const charCount = ref(0); // 字数计数
-const inputMessage = ref(''); // 输入消息的变量
-const messages = ref<{ avatar: string; text: string; }[]>([]); // 消息列表
+const progress = ref(50);
+const charCount = ref(0);
+const inputMessage = ref('');
+const messages = ref<{ avatar: string; content: string; type: string; }[]>([]); // 更新类型以包括content和type
+const userAvatar = ref('../../assets/img/AIchat/user.png');
+const botAvatar = ref('../../assets/img/AIchat/Sofia.png')
+const lastChatTime = ref('');
+const lastText = ref('');
 
-// 控制提示框和设置框的显示状态
 const isTipsModalVisible = ref(false);
-const isSettingModalVisible = ref(false); // 设置窗口的显示状态
-const isRechargeModalVisible =ref(false);
+const isSettingModalVisible = ref(false);
+const isRechargeModalVisible = ref(false);
 
-// 跳转到主页的函数
+const token="eyJhbGciOiJIUzUxMiJ9.eyJsb2dpbl91c2VyX2tleSI6IjViNjJlZjRjLTMzZGEtNDU1ZS1iMDU0LTM3ZTU1ZGI2NDQ0ZSJ9.xafO0T90--P6pMXa7q24ljW8OLIP_7NiBhbvqva_XhoHwaXwgZWVc3ZIn4GVc0Fb6JBMJ6_gNHGKlRQSYXfc6w";
+// 设置请求头
+const headers = {
+'Content-Type': 'application/json',
+  Authorization: `Bearer ${token}`, // 替换为你的 token
+};
+
 const goHome = () => {
   router.push("/");
 };
 
-// 打开充值界面
 const openRecharge = () => {
-    isRechargeModalVisible.value=true;
+    isRechargeModalVisible.value = true;
 };
 
-// 关闭充值界面
 const closeRecharge = () => {
-    isRechargeModalVisible.value=false;
+    isRechargeModalVisible.value = false;
 };
 
-// 打开提示框
 const openTipsModal = () => {
-  isTipsModalVisible.value = true; // 显示提示框
+  isTipsModalVisible.value = true;
 };
 
-// 关闭提示框
 const closeTipsModal = () => {
-  isTipsModalVisible.value = false; // 隐藏提示框
+  isTipsModalVisible.value = false;
 };
 
-// 打开设置框
 const opensettingModal = () => {
-  isSettingModalVisible.value = true; // 显示设置框
+  isSettingModalVisible.value = true;
 };
 
-// 关闭设置框
 const closeSettingModal = () => {
-  isSettingModalVisible.value = false; // 隐藏设置框
+  isSettingModalVisible.value = false;
 };
 
-// 选择机器人
 const selectAIBot = (botName: string) => {
   selectedBot.value = botName;
+
+  nextTick(() => {
+        const chatContent = document.querySelector('.chat-content');
+        chatContent.scrollTop = chatContent.scrollHeight;
+    });
 };
 
-// 更新字数计数函数
 const updateCharCount = (event: InputEvent) => {
-  const target = event.target as HTMLInputElement; // 转换为 HTMLInputElement
-  charCount.value = target.value.length; // 获取输入框的字符长度
+  const target = event.target as HTMLInputElement;
+  charCount.value = target.value.length;
 };
 
 // 发送消息的函数
-const sendMessage = () => {
-  if (inputMessage.value.trim() !== '') { // 确保输入不为空
+const sendMessage = async () => {
+  if (inputMessage.value.trim() !== '') {
+    // 用户发送的消息
     messages.value.push({ 
-      avatar: '../../assets/img/AIchat/user.png', // 用户头像
-      text: inputMessage.value // 发送的消息
+      avatar: userAvatar.value, 
+      content: inputMessage.value, 
+      type: '0' 
     });
-    inputMessage.value = ''; // 清空输入框
-    charCount.value = 0; // 重置字符计数
+
+    // 自动滚动到最新消息
+    nextTick(() => {
+      const chatContent = document.querySelector('.chat-content');
+      chatContent.scrollTop = chatContent.scrollHeight;
+    });
+
+    // 保存当前输入内容
+    const messageContent = inputMessage.value;
+    
+    // 清空输入框和字符计数
+    inputMessage.value = '';
+    charCount.value = 0;
+
+    const data = {
+      content: messageContent, // 使用保存的消息内容
+    };
+
+    // 发送 POST 请求
+    try {
+      const response = await fetch('https://api.eliya.fun/chat/completions/stream', {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        console.error('网络请求失败:', response.statusText);
+        return;
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+
+      const botMessage = {
+        avatar: botAvatar.value,
+        content: '',
+        type: '1'
+      };
+      messages.value.push(botMessage);
+
+      while (!done) {
+        const { value, done: isDone } = await reader.read();
+        done = isDone;
+
+        if (value) {
+          const chunk = decoder.decode(value, { stream: true });
+          const lines = chunk.split('\n'); // 将数据分割成行
+
+          for (const line of lines) {
+            if (line.startsWith('data:')) {
+              const jsonData = line.substring(5).trim();
+              if (jsonData) {
+                try {
+                  const data = JSON.parse(jsonData);
+                  if (data.code === 200) {
+                    const messageText = data.data.message;
+                    const end = data.data.end;
+
+                    if (messageText) {
+                      // 将换行符替换为 <br />
+                      botMessage.content += messageText.replace(/\n/g, '<br />');
+                      messages.value[messages.value.length - 1] = { ...botMessage };
+
+                      nextTick(() => {
+                        const chatContent = document.querySelector('.chat-content');
+                        chatContent.scrollTop = chatContent.scrollHeight; // 自动滚动到最新消息
+                      });
+                    }
+
+                    if (end) {
+                      done = true;
+                    }
+                  }
+                } catch (error) {
+                  console.error('解析返回数据失败:', error);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      console.log("连接已关闭");
+    } catch (error) {
+      console.error('请求过程中的错误:', error);
+    }
   }
 };
+
+
+
+const GetChatList = async () => {
+  try {
+    const response = await fetch('https://api.eliya.fun/chat/list', {
+      method: 'GET',
+      headers: headers,
+    });
+
+    // 检查响应状态
+    if (response.ok) { // 如果响应状态为200-299
+      const responseData = await response.json(); // 获取 JSON 数据
+      console.log(responseData);
+
+      if (responseData.code === 200) { // 检查返回的业务状态码
+        const chatData = responseData.data; // 获取聊天数据
+        console.log(chatData);
+
+        messages.value = []; // 清空现有消息
+        chatData.forEach(item => {
+          messages.value.push({
+            avatar: item.type === '0' ? userAvatar.value : botAvatar.value,
+            content: item.content,
+            type: item.type
+          });
+        });
+
+        // 更新最后一条消息的时间和内容
+        if (chatData.length > 0) {
+          const lastMessage = chatData[chatData.length - 1];
+          lastChatTime.value = lastMessage.updateTime.substring(11, 16); 
+          lastText.value = lastMessage.content; 
+        }
+      } else {
+        console.error('获取聊天列表失败:', responseData.msg); // 处理业务错误
+      }
+    } else {
+      console.error('网络请求失败:', response.statusText); // 处理网络错误
+    }
+  } catch (error) {
+    console.error('请求过程中的错误:', error); // 处理异常
+  }
+};
+
+
+onMounted(() => {
+  GetChatList();
+});
 </script>
 
-
-  
 <style lang="scss" scoped>
 .aichat-container {
     display: flex; /* 使用flex布局 */
@@ -384,9 +506,9 @@ const sendMessage = () => {
     text-underline-position: from-font;
     text-decoration-skip-ink: none;
     color: #A7B5C9;
-    position: relative;
-    left: 5px;
-
+    height: 16px;
+    width: 25px;
+    margin-left: 6px;
 }
 .text-buttom{
     display: flex;
@@ -401,12 +523,14 @@ const sendMessage = () => {
     text-align: left;
     text-underline-position: from-font;
     text-decoration-skip-ink: none;
+    width: 98px;
+    height: 16px;
+    overflow: hidden;
 }
 .bot-image{
     width: 16px;
     height: 16px;
-    position: relative;
-    left: 19px;
+    margin-left: 19px;
 }
 
 
@@ -418,9 +542,7 @@ const sendMessage = () => {
 .chattitle-box {
     display: flex; /* 使用flex布局 */
     align-items: center; /* 垂直居中对齐 */
-    border-left: 1px solid #E5E8EC; /* 左侧边框 */
     border-bottom: 1px solid #E5E8EC; /* 底部边框 */
-    border-top:  1px solid #E5E8EC;
     width: 946px;
     height: 50px;
 }
@@ -431,12 +553,9 @@ const sendMessage = () => {
     font-size: 18px;
     font-weight: 600;
     line-height: 25.2px;
-    text-align: center;
     text-underline-position: from-font;
     text-decoration-skip-ink: none;
     margin-left: 24px;
-    position: absolute;
-    top: 13px;
 }
 
 .bottext {
@@ -448,18 +567,15 @@ const sendMessage = () => {
     text-underline-position: from-font;
     text-decoration-skip-ink: none;
     color: #9BA3AF;
-    position: absolute;
-    top: 19px;
-    margin-left: 82px;
+    margin-top: 6px;
+    margin-left: 4px;
 }
 
 .petrol-icon {
     width: 16px; /* 图标宽度 */
     height: 16px; /* 自适应高度 */
+    margin-top: 5px;
     margin-left: 10px;
-    position: absolute;
-    top: 19px;
-    margin-left: 261px;
 }
 
 .token {
@@ -471,9 +587,8 @@ const sendMessage = () => {
     text-underline-position: from-font;
     text-decoration-skip-ink: none;
     color: #9BA3AF;
-    position: absolute;
-    top: 19px;
-    margin-left: 281px;
+    margin-top: 5px;
+    margin-left: 4px;
 }
 
 .recharge-button {
@@ -514,6 +629,10 @@ const sendMessage = () => {
     display: flex;
     flex-direction: column;
     height: 413px;
+    overflow-y: auto;
+    user-select: text; /* 允许选中文字 */
+  -webkit-user-select: text; /* Safari 支持 */
+  -moz-user-select: text; /* Firefox 支持 */
 }
 
 .message {
@@ -610,6 +729,7 @@ const sendMessage = () => {
     background: #5CA9F9;
     color: #FFFFFF;
     border: none;
+    cursor: pointer;
 }
 
 

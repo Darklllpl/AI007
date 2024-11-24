@@ -12,16 +12,16 @@ const config: {
    */
   baseUrl: {
     // 开发环境接口前缀
-    dev: "/api",
+    dev: "https://api.eliya.fun",
 
     // 打包生产环境接口前缀
-    pro: "https://xxx/api",
+    pro: "https://api.eliya.fun",
   },
 
   /**
    * 接口成功返回状态码
    */
-  resultCode: "0000",
+  resultCode: "200",
 
   /**
    * 接口请求超时时间

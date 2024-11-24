@@ -31,11 +31,9 @@ const close = () => {
     background-color: rgba(0, 0, 0, 0); /* 半透明背景 */
     display: flex; /* 使用 flexbox 布局 */
     z-index: 1000; /* 确保在最上层 */
-    position: fixed; /* 使用 fixed 定位，覆盖整个视口 */
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    bottom: 0; 
+    position: absolute;
+    width: 600px; /* 设置宽度 */
+    height: 480px; /* 设置高度 */
     justify-content: center; /* 水平居中 */
     align-items: center; /* 垂直居中 */
 }

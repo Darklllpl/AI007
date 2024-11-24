@@ -96,14 +96,14 @@
                         </div>
                         <div 
                             class="rechargebutton rechargebutton3" 
-                            :class="{ active: selectedRecharge === 149 }" 
-                            @click="selectRecharge(149)">
+                            :class="{ active: selectedRecharge === 249 }" 
+                            @click="selectRecharge(249)">
                             <div class="text-line1">开通三年</div>
                             <div class="textcontainer textcontainer3">
                                 <div class="text-line2">￥</div>
-                                <div class="text-line3">149</div>
+                                <div class="text-line3">249</div>
                             </div>
-                            <div class="text-line4">¥299</div>
+                            <div class="text-line4">¥399</div>
                         </div>
                     </div>
 
@@ -178,22 +178,18 @@ const forshowPay=()=>{
     background-color: rgba(0, 0, 0, 0); /* 半透明背景 */
     display: flex; /* 使用 flexbox 布局 */
     z-index: 1000; /* 确保在最上层 */
-    position: fixed; /* 使用 fixed 定位，覆盖整个视口 */
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    bottom: 0; 
+    position: absolute;
     justify-content: center; /* 水平居中 */
-    align-items: center; /* 垂直居中 */
+    align-items: center; /* 纵向居中 */
 }
 
 .beVIP-content {
     background: white; /* 窗口背景色 */
-    padding: 20px; /* 内边距 */
     border-radius: 8px; /* 圆角 */
     width: 620px; /* 宽度 */
     height: 475px;
     display: flex; /* 使用 flexbox 布局分左右 */
+    box-shadow: 0px 2px 12.5px 0px #0000001C;
 }
 
 .left-side {
@@ -360,14 +356,14 @@ color: #1E223C;
     padding-left: 0px;
 }
 .rechargebutton {
-    border: 1px solid transparent; /* 默认边框颜色 */
+    border: 0.68px solid #E0E2E6;
     background-color: #FFFFFF; /* 默认背景色 */
     cursor: pointer;
     transition: border 0.3s, background-color 0.3s; /* 平滑过渡 */
 }
 
 .rechargebutton.active {
-    border: 0.5px solid #F7AF00; /* 点击后的边框颜色 */
+    border: 0.68px solid #F7AF00;
     background-color: #FFF7E5; /* 点击后的背景颜色 */
 }
 
@@ -376,7 +372,7 @@ color: #1E223C;
 .rechargebutton3 {
     width: 120px;
     height: 120px;
-    border: 0.5px solid #9BA3AF;
+    border: 0.68px solid #E0E2E6;
     border-radius: 8px;
 }
 

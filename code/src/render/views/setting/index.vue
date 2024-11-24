@@ -1,5 +1,5 @@
 <template>
-    <div class="modal-overlay" @click.self="closeModal">
+    <div class="modal-overlay">
         <div class="modal-content">
             <div class="head">
                 <img src="../../assets/img/setting/setting.png" alt="设置" class="setting-icon">
@@ -103,7 +103,7 @@
                         </div>
                         <div class="content3-textline">
                             <div class="content3-field">注销账号不可恢复，所有数据将被删除</div>
-                            <button class="content3-btn2">注销账号</button>
+                            <button class="content3-btn2" @click="ForAccountCancel">注销账号</button>
                         </div>
                         <div class="content3-textline">
                             <div class="content3-field">退出当前登录账号</div>
@@ -125,9 +125,10 @@
             <Exit v-if="showExit" @close="showExit = false" />
 
             <ModifyPassword v-if="showModifyPassword" @close="showModifyPassword = false" />
-            <beVIP v-if="showbeVIP" @close="showbeVIP = false" />
             <modifyPhone v-if="showmodifyPhone" @close="showmodifyPhone = false"/>
+            <Accountcancel v-if="showAccountCancel" @close="showAccountCancel=false"/>
         </div>
+        <beVIP v-if="showbeVIP" @close="showbeVIP = false" />
     </div>
 </template>
 
@@ -138,6 +139,7 @@ import Exit from './exit.vue';
 import ModifyPassword from'./modifyPassword.vue';
 import beVIP from './beVIP.vue';
 import modifyPhone from './modifyPhone.vue';
+import Accountcancel from './Accountcancel.vue';
 
 const emit = defineEmits();
 const activeContent = ref('content1');
@@ -147,6 +149,7 @@ const showExit=ref(false);
 const showModifyPassword=ref(false);
 const showbeVIP=ref(false);
 const showmodifyPhone=ref(false);
+const showAccountCancel=ref(false);
 const VIPstatus = ref<number>(1); // 充值状态，1为会员，2为非会员
 
 const closeModal = () => {
@@ -176,22 +179,24 @@ const ForbeVIP=()=>{
 const FormodifyPhone=()=>{
     showmodifyPhone.value=true;
 }
+const ForAccountCancel=()=>{
+    showAccountCancel.value=true;
+}
 </script>
 
 
 
 <style lang="scss" scoped>
 .modal-overlay {
-    position: fixed; /* 使用 fixed 定位 */
-    top: 0;
-    left: 0;
     background: rgba(0, 0, 0, 0); /* 半透明背景 */
     display: flex;
+    position: absolute;
     justify-content: center; /* 水平居中 */
     align-items: center; /* 纵向居中 */
+    width: 1200px; /* 使用百分比填充 */
+    height: 768px; /* 使用百分比填充 */
     z-index: 2000;
-    width: 100%; /* 使用百分比填充 */
-    height: 100%; /* 使用百分比填充 */
+    
 }
 
 .modal-content {
@@ -202,6 +207,8 @@ const FormodifyPhone=()=>{
     display: flex;
     flex-direction: column; /* 纵向排列内容 */
     overflow: hidden;
+    position: absolute;
+    box-shadow: 0px 2px 12.5px 0px #0000001C;
 }
 
 .head {

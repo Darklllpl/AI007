@@ -68,8 +68,8 @@ function submitPassword() {
         document.querySelector('.errortext').style.display = 'block'; // 显示错误文本
     } else {
         document.querySelector('.errortext').style.display = 'none'; // 隐藏错误文本
-        // 进行下一步操作
-        console.log("密码一致，进行下一步操作");
+        
+
     }
 }
 

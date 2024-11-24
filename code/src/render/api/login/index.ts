@@ -1,10 +1,18 @@
-import request from "@/render/service/axios"; // 引入自定义的 axios 请求封装
-import type { Login,GetVerificationCode } from "./types"; // 引入类型定义
+import request from "@/render/service/axios"; 
+import type { Login,GetVerificationCode,TestVerificationCode,Cancel } from "./types"; 
 
-// 登录请求
-export const login = (data: Login.Request) =>
-  request.post<Login.Response>("/userLogin/login", data);
+// 登录
+export const login = (data: Login.Request) => 
+  request.post<Login.Response>("https://api.eliya.fun/userLogin/login", {data},{"Content-Type":"multipart/form-data"});
 
-export const getVerificationCode=(data:GetVerificationCode.Request)=>
-  request.get<GetVerificationCode.Response>("/userLogin/getVerificationCode",data);
-  
+// 通过手机号获取验证码
+export const getVerificationCode = (data: GetVerificationCode.Request) => 
+  request.get<GetVerificationCode.Response>("/userLogin/getVerificationCode", { params: data });
+
+// 验证码校验
+export const testVerificationCode = (data: TestVerificationCode.Request) => 
+  request.get<TestVerificationCode.Response>("/user/testVerificationCode", { params: data });
+
+// 用户注销
+export const cancel = () => 
+  request.get<Cancel.Response>("/user/cancel");

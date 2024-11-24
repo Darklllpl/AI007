@@ -40,14 +40,13 @@ const close = () => {
     display: flex; /* 使用 flexbox 布局 */
     z-index: 1000; /* 确保在最上层 */
     position: absolute;
-    position: fixed; /* 使用 fixed 定位，覆盖整个视口 */
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    bottom: 0; 
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 纵向居中 */
     display: flex; /* 使用 flexbox 布局 */
     justify-content: center; /* 水平居中 */
     align-items: center; /* 垂直居中 */
+    width: 600px; /* 设置宽度 */
+    height: 480px; /* 设置高度 */
 }
 
 .check-update-content {

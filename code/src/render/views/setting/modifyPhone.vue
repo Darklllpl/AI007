@@ -15,8 +15,12 @@
                 <div class="phonenumber">+86130******00</div>
                 <div class="text1">有效期十分钟</div>
             </div>
-            <input type="text" placeholder="短信验证码" class="SMScode">
-            <button class="SMScode-btn">获取验证码</button>
+            <input v-model="verificationCode" type="text" placeholder="短信验证码" class="SMScode">
+            <button 
+                class="SMScode-btn" 
+                @click="GetVerificationCode">
+                {{ buttonText }} 
+            </button>
             <button class="sendbtn" @click="nextStep">确认</button>
         </div>
 
@@ -57,7 +61,11 @@
                 <div class="text1">有效期十分钟</div>
             </div>
             <input type="text" placeholder="短信验证码" class="SMScode">
-            <button class="SMScode-btn">获取验证码</button>
+            <button 
+                class="SMScode-btn" 
+                @click="GetVerificationCode">
+                {{ buttonText }} 
+            </button>
             <button class="sendbtn" @click="nextStep">提交</button>
         </div>
 
@@ -77,20 +85,99 @@
 
 <script lang="ts" setup>
 import { defineEmits, ref } from 'vue';
+import {testVerificationCode} from '../../api/login'
+import { getVerificationCode } from "@/render/api/login";
+
+const buttonText = ref('获取验证码'); // 按钮文字
+const isCounting = ref(false); // 倒计时状态
+const countdown = ref(60); // 倒计时初始值
+const showSuccessMessage = ref(false); // 控制成功提示是否显示
 
 const emit = defineEmits();
 const currentStep = ref(1); // 初始化当前步骤为1
+const verificationCode=ref('');
+const phoneInput = document.querySelector('.phonenumberinput');
 
 const close = () => {
     emit('close'); // 触发关闭事件
 };
 
+// 检查输入的手机号是否有效
+function validatePhoneNumber(phoneNumber) {
+  // 检查输入框不为空且仅包含数字
+  const isValid = phoneNumber.trim() !== '' && /^\d+$/.test(phoneNumber);
+  return isValid;
+}
+
 // 下一个步骤
-const nextStep = () => {
-    if (currentStep.value < 4) {
-        currentStep.value++; // 增加步骤
+const nextStep = async () => {
+    if (currentStep.value==1||currentStep.value==3){
+        const data = {
+            verificationCode: verificationCode.value, // 根据登录方式设置 loginType
+        };
+
+        const response = await testVerificationCode(data);
+        if(response.code == '200'){
+            if (currentStep.value < 4) {
+                currentStep.value++; // 增加步骤
+            }
+        }
+    }else if(currentStep.value==2){
+        if(validatePhoneNumber(phoneInput)){
+            if (currentStep.value < 4) {
+                currentStep.value++; // 增加步骤
+            }
+        }
     }
 };
+
+// 获取验证码
+async function GetVerificationCode() {
+  isCounting.value = true;
+  countdown.value = 60; // 初始化倒计时为60秒
+  updateButtonText(); // 更新按钮文本
+
+  // 显示验证码发送成功的提示
+  showSuccessMessage.value = true;
+
+  // 设置5秒钟后隐藏提示
+  setTimeout(() => {
+    showSuccessMessage.value = false; // 隐藏提示
+  }, 5000);
+
+  const timer = setInterval(() => {
+    countdown.value--;
+    updateButtonText(); // 更新按钮文本
+
+    if (countdown.value === 0) {
+      clearInterval(timer);
+      isCounting.value = false;
+      buttonText.value = '获取验证码'; // 倒计时结束后恢复文本
+    }
+  }, 1000);
+
+  const data={
+    phone: phoneNumber.value
+  };
+  // 发送验证码请求
+  try {
+    const response = await getVerificationCode(data)
+    
+    if (response.code) {
+      console.log('验证码已发送');
+    } else {
+      console.error('发送验证码失败:', response.message);
+      // 可以处理更多错误逻辑
+    }
+  } catch (error) {
+    console.error('请求出现错误:', error);
+  }
+}
+
+// 更新按钮文本
+function updateButtonText() {
+  buttonText.value = isCounting.value ? `重新获取(${countdown.value}s)` : '获取验证码';
+}
 </script>
 
 <style lang="scss" scoped>
@@ -98,15 +185,12 @@ const nextStep = () => {
     background-color: rgba(0, 0, 0, 0); /* 背景半透明 */
     display: flex; /* 使用 flexbox 布局 */
     z-index: 1000; /* 确保在最上层 */
-    position: absolute;
-    position: fixed; /* 使用 fixed 定位，覆盖整个视口 */
-    top: 0; 
-    left: 0; 
-    right: 0; 
-    bottom: 0; 
     display: flex; /* 使用 flexbox 布局 */
+    position: absolute;
     justify-content: center; /* 水平居中 */
     align-items: center; /* 垂直居中 */
+    width: 600px;
+    height: 480px;
 }
 
 .modifyPhone-content1,
@@ -120,6 +204,8 @@ const nextStep = () => {
     width: 400px;
     width: 400px;
     height: 227px;
+    box-shadow: 0px 2px 12.5px 0px #0000001C;
+
 }
 .modifyPhone-content2{
     height: 327px;
@@ -303,6 +389,7 @@ margin-right: 10px;
     border: none;
     margin-left: 272px;
     margin-top: 20px;
+    cursor: pointer;
 }
 
 </style>
